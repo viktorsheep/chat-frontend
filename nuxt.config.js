@@ -1,4 +1,13 @@
+import path from 'path'
+import fs from 'fs'
 export default {
+  server: {
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, 'server.key')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'server.crt'))
+    }
+  },
+
   // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
   ssr: false,
 
@@ -45,7 +54,8 @@ export default {
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/stylelint
     '@nuxtjs/stylelint-module',
-    '@nuxtjs/google-fonts'
+    '@nuxtjs/google-fonts',
+    '@nuxtjs/moment'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -54,7 +64,28 @@ export default {
     // '@nuxtjs/axios',
     // '@nuxtjs/auth-next',
     { src: '@nuxtjs/axios', mode: 'client' },
-    { src: '@nuxtjs/auth-next', mode: 'client' }
+    { src: '@nuxtjs/auth-next', mode: 'client' },
+    [
+      '@nuxtjs/firebase', {
+        config: {
+          apiKey: 'AIzaSyDJ6gApAnRTcriv2P9xxiBXw2Epl0rBZmM',
+          authDomain: 'chat-test-e7d6f.firebaseapp.com',
+          projectId: 'chat-test-e7d6f',
+          storageBucket: 'chat-test-e7d6f.appspot.com',
+          messagingSenderId: '627817364736',
+          appId: '1:627817364736:web:2138f30080b69cdede47e5',
+          measurementId: 'G-DG45FCGP3H'
+        },
+        onFirebaseHosting: false,
+        services: {
+          messaging: {
+            createServiceWorker: true,
+            fcmPublicVapidKey: 'BHurDnQy3hMSirsrLs2yi6u4GBAZKUfPza0vkj0U9pM5YGz-9Vh7VzzAwGbtTkEBucXYlOQGQwAIi6FEYU3wjkc',
+            inject: fs.readFileSync('./serviceWorker.js')
+          }
+        }
+      }
+    ]
     // '@nuxtjs/proxy'
   ],
 
@@ -89,7 +120,8 @@ export default {
     },
     plugins: [
       '@/plugins/sender',
-      '@/plugins/cg'
+      '@/plugins/cg',
+      '@/plugins/facebook-sdk'
     ]
   },
 

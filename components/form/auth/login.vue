@@ -66,6 +66,8 @@ export default {
                 message: `Welcome back ${this.$auth.user.name}.`,
                 type: 'success'
               })
+
+              this.handle().updateFirebase()
             })
 
           console.log(this.$auth.loggedIn)
@@ -81,6 +83,56 @@ export default {
           message: 'Your email or password is incorrect',
           type: 'error'
         })
+      }
+    },
+
+    handle () {
+      const self = this
+
+      return {
+        async updateFirebase () {
+          const deleted = await self.$fire.messaging.deleteToken()
+
+          if (!deleted) { return }
+
+          const token = await self.$fire.messaging.getToken()
+
+          console.group('Firebase Token')
+          console.log(token)
+          console.groupEnd()
+
+          await self.$sender({
+            method: 'put',
+            url: `user/${self.$auth.user.id}/update/firebase_token`,
+            data: {
+              firebase_token: token
+            }
+          }).then((res) => {
+            self.firebase().startOnMessageListener()
+          })
+        }
+      }
+    },
+
+    firebase () {
+      const self = this
+
+      return {
+        startOnMessageListener () {
+          self.$fire.messaging.onMessage((payload) => {
+            // Notification
+            self.$notify({
+              title: payload.notification.title,
+              message: payload.notification.body
+            })
+
+            // TODO: Update Facebook Chat
+          })
+        },
+
+        async deleteToken () {
+          return await self.$fire.messaging.deleteToken()
+        }
       }
     }
   }

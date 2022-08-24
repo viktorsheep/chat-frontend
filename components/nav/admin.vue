@@ -29,6 +29,11 @@ export default {
           index: 3,
           name: 'pages',
           to: '/admin/pages'
+        },
+        {
+          index: 4,
+          name: 'settings',
+          to: '/admin/settings'
         }
       ]
     }

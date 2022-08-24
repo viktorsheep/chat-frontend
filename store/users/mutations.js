@@ -11,5 +11,9 @@ export default {
 
   SET (state, param) {
     state.users = param
+  },
+
+  SET_ROLES (state, param) {
+    state.roles = param
   }
 }

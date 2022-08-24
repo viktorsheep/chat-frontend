@@ -16,6 +16,10 @@
       <el-input v-model="form.contact_person" placeholder="Contact Person" />
     </el-form-item>
 
+    <el-form-item prop="access_token">
+      <el-input v-model="form.access_token" placeholder="Access Token" />
+    </el-form-item>
+
     <el-form-item>
       Active &nbsp; : <el-switch v-model="form.is_active" />
     </el-form-item>
@@ -48,6 +52,7 @@ export default {
         page_id: '',
         url: '',
         contact_person: '',
+        access_token: '',
         is_active: false
       },
       rules: {

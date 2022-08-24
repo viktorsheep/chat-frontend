@@ -27,7 +27,7 @@ const actions = {
   async browse ({ commit }, param) {
     const payload = {
       method: 'get',
-      url: `${dv.path}browse`,
+      url: `${dv.path}browse${param !== null ? '?with_token=true' : ''}`,
       data: param
     }
 

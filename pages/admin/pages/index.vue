@@ -45,6 +45,14 @@
           />
 
           <el-table-column
+            label="Access Token"
+          >
+            <template>
+              ***********
+            </template>
+          </el-table-column>
+
+          <el-table-column
             prop="is_active"
             label="Status"
             width="100"

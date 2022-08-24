@@ -2,10 +2,10 @@
   <div>
     <el-container style="height: 100vh;">
       <el-aside width="250px" style="background-color: #1f91f2;">
-        <div style="background: #0003; margin-bottom: 10px; padding-top: 5px; padding-bottom: 5px;">
+        <div style="background: #0003; height: 50px; line-height: 50px; padding-top: 10px;">
           <Logo />
         </div>
-        <NavContacts v-if="$auth.user.user_role_id === 3" />
+        <NavUser v-if="$auth.user.user_role_id === 3" />
         <NavAdmin v-if="$auth.user.user_role_id === 1" />
       </el-aside>
 
@@ -15,6 +15,7 @@
           <ElmDropdownTopBarPage />
 
           <el-dropdown
+            trigger="click"
             style="cursor: pointer;"
             @command="handleDropdownCommand"
           >
@@ -49,6 +50,7 @@ export default {
   middleware: 'auth',
   mounted () {
     // console.log(this.$auth.loggedIn)
+    this.$FbInit()
   },
   methods: {
     handleDropdownCommand (command) {
@@ -73,5 +75,5 @@ export default {
 </style>
 
 <style lang="scss">
-$brandColor: #1f91f2;
+  $brandColor: #1f91f2;
 </style>

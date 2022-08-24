@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-alert
-      title="Dashboard is coming soon!"
+      title="Dashboard"
       type="info"
       center
       :closable="false"

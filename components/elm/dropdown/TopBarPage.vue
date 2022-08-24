@@ -1,4 +1,8 @@
 <template>
+  <span style="float: left;">
+    {{ page.name }}
+  </span>
+  <!--
   <el-dropdown
     v-if="retrieved"
     v-loading="loading"
@@ -19,6 +23,8 @@
       </el-dropdown-item>
     </el-dropdown-menu>
   </el-dropdown>
+  */
+  -->
 </template>
 
 <script>

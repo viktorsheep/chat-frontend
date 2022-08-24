@@ -54,7 +54,20 @@ const actions = {
         commit('EDIT', res.content.data)
       }
     })
-  }
+  }, // e.o EDIT
+
+  // ROLES
+  async roles ({ commit }, param) {
+    await this.$sender({
+      method: 'get',
+      url: `${dv.path}roles`
+    })
+      .then((res) => {
+        if (res.success) {
+          commit('SET_ROLES', res.content.data)
+        }
+      })
+  } // e.o ROLES
 
 }
 
