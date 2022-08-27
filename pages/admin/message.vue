@@ -26,17 +26,12 @@ export default {
       .then(() => {
         console.log('fb loaded')
         Facebook.init({
-          // appId: 981023695815288 // prohouse
-          // appId: 1593537531031479 // ekballo
-          appId: 1025874564725988 // demodemo
+          appId: process.env.FACEBOOK_APP_ID
         })
 
         Facebook.api('/100614572669575', 'get', {
           fields: 'coonversations{unread_count,subject,snippet,senders,can_reply,message_count,participants}',
-          // access_token: 'EAAOlBwkDvOQBAKWUXlcgrVdCZBIVZA5ZAuq6JPZCyOo381ym1G4tmcgvFsogVwIhpn3ygbb3U9ZCz9FUjQOb5Cw7oQ6OjZCff4VkZAHwaRV2DHFZAAgFDIgoODYE2TqRwlHE1sQeVgMbeoz9h1C1xtKdTdcBmB9kHUHs18jp3gvpHeXVUNI5hZCJy'
-          // EAAOlBwkDvOQBAKWUXlcgrVdCZBIVZA5ZAuq6JPZCyOo381ym1G4tmcgvFsogVwIhpn3ygbb3U9ZCz9FUjQOb5Cw7oQ6OjZCff4VkZAHwaRV2DHFZAAgFDIgoODYE2TqRwlHE1sQeVgMbeoz9h1C1xtKdTdcBmB9kHUHs18jp3gvpHeXVUNI5hZCJy
-          // access_token: 'EAAOlBwkDvOQBAEVwLZCFBJIgN2OxraZCZB9u69CZAMcFyAtGQ3HhATfgV8NR5eRgNkAsRZAfIpETkIusA6gjZBIynUbdrYOmrOwqfoHow3MsYH9nl7T8TM9nVgeeatHMYMtHVuUKSIVvBtDGidtipHYRZCMpZAhW3WMKMGt1Ew1IcNUdKsg16w4t'
-          access_token: 'EAAOlBwkDvOQBAE2OyIXd9ULQ4JlmJmsapWJFWZBCoG9ZANEL2qtjElPhO3XZCcmHn45JBsZC5dXpyec69KMihhZAmSDlxLY1K6tdRTRpED9pwbuZCZBX8iumrL3ZBWKvcgDXHV5WY6bvY4Ddha96AnLLwZA3JKaRiZCQNffqGcIhf0JZCym5RRm1lZCP'
+          access_token: process.env.FACEBOOK_PAGE_ACCESS_TOKEN
         })
           .then((response) => {
             console.log('ok')
