@@ -16,7 +16,7 @@
       <el-input v-model="form.contact_person" placeholder="Contact Person" />
     </el-form-item>
 
-    <el-form-item prop="access_token">
+    <el-form-item v-if="!editMode" prop="access_token">
       <el-input v-model="form.access_token" placeholder="Access Token" />
     </el-form-item>
 
@@ -104,6 +104,9 @@ export default {
         this.form = R.clone(this.editData)
       }
     }
+  },
+
+  methods: {
   }
 }
 </script>

@@ -47,7 +47,6 @@ export default {
 
   fetch () {
     this.getPages()
-    console.log('hi fetch')
     this.api().getUserPages(this.$auth.user.id)
   },
 
@@ -110,7 +109,6 @@ export default {
       return {
 
         async getUserPages (id) {
-          console.log('hi here')
           self.loading.userPages = true
           const payload = {
             method: 'get',
@@ -119,7 +117,6 @@ export default {
 
           await self.$sender(payload).then((res) => {
             self.loading.userPages = false
-            console.log(res.content.data)
             self.data.userPages = res.content.data
           })
         }
@@ -130,9 +127,8 @@ export default {
       const self = this
       return {
         getPageName (id) {
-          const x = self.pages.find(p => p.id === 1)
-          console.log(typeof (x))
-          return x
+          const x = self.pages.find(p => p.id === id)
+          return x !== 'undefined' ? x : { name: 'Page' }
         }
       }
     }

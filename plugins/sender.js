@@ -39,12 +39,14 @@ export default ({ app }, inject) => {
     // config : different baseURL
     if (payload.baseURL !== undefined) {
       app.$axios.setBaseURL(payload.baseURL)
+    } else {
+      app.$axios.setBaseURL(app.$config.baseURL)
     }
 
     await app.$axios({
       method: payload.method,
       url: payload.url,
-      data,
+      [payload.method === 'get' ? 'params' : 'data']: data,
       headers
     }).then((res) => {
       if (res.status === 200 || res.status === 201) {

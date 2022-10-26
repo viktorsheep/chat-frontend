@@ -108,23 +108,27 @@ export default {
         this.loaded.messages = false
       }
 
-      await Facebook.api(`/${this.currentPage.page_id}`, 'get', {
-        fields: 'conversations{unread_count,subject,snippet,senders,can_reply,message_count,updated_time,participants}',
-        access_token: this.currentPage.access_token
+      await this.$sender({
+        method: 'get',
+        url: `${this.currentPage.page_id}/conversations?access_token=${this.currentPage.access_token}`,
+        baseURL: 'https://graph.facebook.com/v14.0',
+        data: {
+          fields: 'unread_count,subject,snippet,senders,can_reply,message_count,updated_time,participants'
+        },
+        headers: {
+          contentType: 'application/json'
+        }
+      }).then((res) => {
+        this.conversations = []
+        this.conversations = res.content.data.data
+        this.loaded.messages = true
+      }).catch((error) => {
+        this.$cg({
+          title: 'Facebook get conversations error',
+          type: 'error',
+          logs: error
+        })
       })
-        .then((res) => {
-          this.conversations = []
-          this.conversations = res.conversations.data
-          console.group('conversations')
-          console.log(this.conversations)
-          console.groupEnd()
-
-          this.loaded.messages = true
-        })
-        .catch((error) => {
-          console.log('error')
-          console.log(error)
-        })
     },
 
     async userProfile (id) {

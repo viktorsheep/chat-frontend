@@ -7,12 +7,11 @@ export default ({ app }, inject) => {
     Facebook.load()
       .then(() => {
         console.group('Facebook SDK loaded.')
-        console.log('FB SDK Info Provided : ' + (param !== undefined))
-
+        console.log(`FB SDK Info ${param === undefined ? 'not' : ''} provided.`)
         if (param === undefined) { console.log('Using default SDK info.') }
 
         Facebook.init({
-          appId: param !== undefined ? param.appId : 1593537531031479, // ekballo
+          appId: param !== undefined ? param.appId : app.$config.facebookAppID,
           version: param !== undefined ? param.version : 'v14.0'
         })
         console.log('Facebook SDK initiated.')

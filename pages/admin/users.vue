@@ -193,30 +193,96 @@
       title="User's Associated Pages"
       :visible.sync="visibility.dialog.userPages"
       width="50%"
+      @closed="handle().close().dialog()"
     >
       <!-- :before-close="handle().close().dialog()" -->
       <div v-loading="loading.userPages">
-        <div
-          v-for="up in data.userPages"
-          :key="up.id"
-          class="list-userpages"
+        <!-- <el-divider>Associated Pages</el-divider> -->
+        <el-card
+          v-if="!visibility.notAssociated"
+          style="margin-bottom: 20px;"
         >
-          <div class="pagename">
-            {{ helper().getPageName(up.page_id).name }}
-            <i :class="`el-icon-${up.is_joined ? 'success' : 'remove'}`" :style="`color: #${up.is_joined ? '67C23A' : '909399'};`" />
+          <div slot="header">
+            Associated Pages
           </div>
 
-          <div v-if="up.is_joined">
-            <b>Joined at </b>{{ up.joined_date }}
-          </div>
-          <div v-else>
-            <b>Left at </b>{{ up.left_date }}
-          </div>
+          <div
+            style="max-height: calc(100vh - 600px); overflow-y: auto;"
+          >
+            <div
+              v-for="up in data.userPages"
+              :key="up.id"
+              class="list-userpages"
+            >
+              <div class="pagename">
+                {{ helper().getPageName(up.page_id).name }}
+                <i :class="`el-icon-${up.is_joined ? 'success' : 'remove'}`" :style="`color: #${up.is_joined ? '67C23A' : '909399'};`" />
+              </div>
 
-          <div class="control">
-            <el-button type="danger" size="small" icon="el-icon-error" @click="handle().user().deletePage()" />
+              <div v-if="up.is_joined">
+                <b>Joined at </b>{{ up.joined_date }}
+              </div>
+              <div v-else>
+                <b>Left at </b>{{ up.left_date }}
+              </div>
+
+              <div class="control">
+                <el-button type="danger" size="small" icon="el-icon-error" @click="handle().user().pages().del(up.id, up.user_id)" />
+              </div>
+            </div>
           </div>
+        </el-card>
+
+        <!-- <el-divider>Other Pages</el-divider> -->
+
+        <div v-if="!visibility.notAssociated">
+          <el-button
+            type="primary"
+            plain
+            style="width: 100%;"
+            @click="visibility.notAssociated = true"
+          >
+            <i class="el-icon-plus" />
+            Add Page
+          </el-button>
         </div>
+
+        <el-card
+          v-if="visibility.notAssociated"
+          class="box-card"
+        >
+          <!-- style="max-height: calc(100vh - 600px); overflow-y: auto;" -->
+          <div slot="header">
+            Other Pages
+            <el-button plain style="float: right; padding: 3px 0" type="text" @click="visibility.notAssociated = false">
+              Back
+            </el-button>
+          </div>
+          <div
+            style="max-height: calc(100vh - 500px); overflow-y: auto; margin-bottom: 20px;"
+          >
+            <div
+              v-for="pna in pagesNotAssociated"
+              :key="pna.id"
+              class="list-userpages unassociated"
+            >
+              <div class="pagename">
+                {{ pna.name }}
+              </div>
+
+              <div class="control">
+                <el-button
+                  type="success"
+                  size="small"
+                  icon="el-icon-plus"
+                  @click="handle().user().pages().add(pna.id, data.userID)"
+                >
+                  Add
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-card>
       </div>
 
       <span slot="footer" class="dialog-footer">
@@ -237,7 +303,8 @@ export default {
         drawer: false,
         dialog: {
           userPages: false
-        }
+        },
+        notAssociated: false
       },
 
       loading: {
@@ -257,6 +324,7 @@ export default {
         },
 
         userPages: [],
+        userID: 0,
 
         pages: {
           selected: [],
@@ -286,7 +354,19 @@ export default {
       users: 'users/users',
       roles: 'users/roles',
       pages: 'pages/pages'
-    })
+    }),
+
+    pagesNotAssociated () {
+      const ups = []
+      this.data.userPages.forEach((up) => {
+        ups.push(up.page_id)
+      })
+
+      const pna = this.pages.filter(p => !ups.includes(p.id))
+
+      // return this.pages.filter()
+      return pna
+    }
   },
 
   watch: {
@@ -303,6 +383,7 @@ export default {
   methods: {
     ...mapActions({
       getUsers: 'users/users',
+      searchUser: 'users/search',
       getRoles: 'users/roles',
       getPages: 'pages/browse',
       addUser: 'users/add'
@@ -325,13 +406,34 @@ export default {
             },
 
             search () {
-
+              if (self.data.search.term !== '') {
+                self.searchUser({ name: self.data.search.term })
+              } else {
+                self.getUsers()
+              }
             },
 
             view (id) {
-              console.log(id)
               self.visibility.dialog.userPages = true
               self.api().getUserPages(id)
+            },
+
+            delete () {
+
+            },
+
+            pages () {
+              // const userPage = this
+
+              return {
+                del (id, userID) {
+                  self.api().delUserPages(id, userID)
+                },
+
+                add (pageID, userID) {
+                  self.api().addUserPages(pageID, userID)
+                }
+              }
             }
           }
         },
@@ -344,7 +446,6 @@ export default {
         },
 
         isActiveChanged (x) {
-          console.log(self.data.user.is_active)
           self.data.user.is_active
             ? self.data.text.is_active = 'Active'
             : self.data.text.is_active = 'Inactive'
@@ -355,15 +456,15 @@ export default {
 
           return {
             closed () {
-              console.log('closed')
             }
           }
         },
 
         close () {
-          const self = this
+          // const close = this
           return {
             dialog () {
+              self.visibility.notAssociated = false
               self.visibility.dialog.userPages = false
             }
           }
@@ -371,6 +472,7 @@ export default {
       }
     }, // e.o handle()
 
+    // API Methods
     api () {
       const self = this
 
@@ -383,21 +485,46 @@ export default {
             url: 'user/page/get/' + id
           }
 
+          self.data.userID = id
+
           await self.$sender(payload).then((res) => {
             self.loading.userPages = false
-            console.log(res.content.data)
             self.data.userPages = res.content.data
+          })
+        },
+
+        async delUserPages (id, userID) {
+          self.loading.userPages = true
+          const payload = {
+            method: 'delete',
+            url: 'user/page/delete/' + id
+          }
+
+          await self.$sender(payload).then((res) => {
+            self.loading.userPages = false
+            this.getUserPages(userID)
+          })
+        },
+
+        async addUserPages (pageID, userID) {
+          self.loading.userPages = true
+          await self.$sender({
+            method: 'post',
+            url: `user/page/add/${pageID}/${userID}`
+          }).then((res) => {
+            self.loading.userPages = false
+            self.visibility.notAssociated = false
+            this.getUserPages(userID)
           })
         }
       }
-    },
+    }, // e.o API Methods
 
     helper () {
       const self = this
       return {
         getPageName (id) {
-          const x = self.pages.find(p => p.id === 1)
-          console.log(typeof (x))
+          const x = self.pages.find(p => p.id === id)
           return x
         }
       }
@@ -416,6 +543,16 @@ export default {
   height: 60px;
   position: relative;
   transition: all 300ms ease-in-out;
+  cursor: pointer;
+
+  &.unassociated {
+    height: 30px;
+    line-height: 30px;
+
+    .control {
+      top: 9px;
+    }
+  }
 
   .pagename {
     font-weight: bolder;

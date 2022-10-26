@@ -38,6 +38,21 @@ const actions = {
     })
   }, // e.o BROWSE
 
+  async search ({ commit }, param) {
+    const payload = {
+      method: 'post',
+      url: `${dv.path}search`,
+      data: param
+    }
+
+    await this.$sender(payload).then((res) => {
+      if (res.success) {
+        console.log(res)
+        commit('SET', res.content.data)
+      }
+    })
+  }, // e.o BROWSE
+
   // EDIT
   async edit ({ commit }, param) {
     const payload = {

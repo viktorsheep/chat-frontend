@@ -24,6 +24,7 @@
 
     <div v-else style="background: white;">
       <div
+        :key="rerenderx"
         v-loading="!visibility.controls && $route.query.psid !== undefined"
         element-loading-text="Getting Messages"
         class="wrap-messages"
@@ -40,13 +41,36 @@
           </div>
         </div>
         <div
-          v-for="m in fbmessages"
+          v-for="m in renderMessage"
           :key="m.id"
           :class="`message ${isSent(m.tags) === true ? 'sent' : 'received'}`"
         >
           <div class="text">
-            {{ m.message }}
+            <div v-if="m.message === ''">
+              <!-- If Message is attachment -->
+              <div v-if="m.hasOwnProperty('attachment')">
+                <div
+                  v-if="m.attachment.mime_type.startsWith('audio/')"
+                  style="height: 54px; line-height: 54px;"
+                >
+                  <audio controls>
+                    <source :src="m.attachment.file_url" :type="m.attachment.mime_type">
+                  </audio>
+                </div>
+              </div>
+              <!-- Else -->
+              <div
+                v-else
+                v-loading="true"
+                element-loading-background="rgba(0, 0, 0, 0)"
+                style="width: 300px; height: 54px; color: white;"
+              />
+            </div>
+            <div v-else>
+              {{ m.message }}
+            </div>
 
+            <!-- Sent Time -->
             <div class="time">
               <el-tooltip
                 class="item"
@@ -58,12 +82,13 @@
                   {{ parseDate(m.created_time).date }}
                 </span>
               </el-tooltip>
-            </div>
+            </div> <!-- e.o Sent Time -->
           </div>
 
           <div style="clear: both;" />
         </div>
       </div>
+      <!-- Rejoin -->
       <div
         v-if="selectedPage === 'Left.'"
         class="wrap-rejoin"
@@ -72,7 +97,9 @@
         <el-button type="primary" size="small" @click="handleRejoinClick">
           Rejoin Now
         </el-button>
-      </div>
+      </div> <!-- e.o Rejoin -->
+
+      <!-- Input Controls -->
       <div v-if="visibility.controls" class="wrap-control">
         <el-input
           v-model="message"
@@ -80,15 +107,16 @@
           size="small"
           clearable
           style="width: calc(100% - 50px);"
-          :disabled="selectedPage === 'Left.' ? true : false"
+          :disabled="selectedPage === 'Left.' ? true : false || visibility.recPop"
           @keyup.enter.native="sendMessage"
         />
 
         <el-popover
           v-if="msgControl.empty"
+          v-model="visibility.recPop"
           placement="top"
           width="400"
-          trigger="click"
+          trigger="manual"
           :value="visibility.recorder"
           @after-leave="handlePopOverAfterLeave"
         >
@@ -152,10 +180,11 @@
           <el-button
             slot="reference"
             type="text"
-            style="width: 40px;"
+            :style="`width: 40px; color: #${visibility.recPop ? 'F56C6C' : '409EFF'};`"
             :disabled="selectedPage === 'Left.' ? true : false"
+            @click="visibility.recPop = !visibility.recPop"
           >
-            <i class="el-icon-microphone" />
+            <i :class="visibility.recPop ? 'el-icon-close' : 'el-icon-microphone'" />
           </el-button>
         </el-popover>
 
@@ -167,7 +196,7 @@
         >
           <i class="el-icon-s-promotion" />
         </el-button>
-      </div>
+      </div> <!-- e.o Input Controls -->
     </div>
   </div>
 </template>
@@ -195,13 +224,18 @@ export default {
       },
       visibility: {
         controls: false,
-        recorder: false
+        recorder: false,
+        recPop: false
       },
       sending: {
         text: '',
         status: false
       },
       fbmessages: [],
+      voiceMessages: {
+        list: [],
+        loading: false
+      },
       timer: {
         time: '01:00',
         status: false,
@@ -223,7 +257,8 @@ export default {
           controls: false,
           src: ''
         }
-      }
+      },
+      rerenderx: 0
     }
   },
 
@@ -247,6 +282,10 @@ export default {
         x = { ...this.pages.find(p => p.id === parseInt(this.$route.query.page)) }
       }
       return x
+    },
+
+    renderMessage () {
+      return this.fbmessages
     }
   },
 
@@ -256,6 +295,9 @@ export default {
         this.setPageOn(nq.page)
 
         if (nq.mid !== undefined) {
+          this.fbmessages = []
+          this.voiceMessages.list = []
+          this.voiceMessages.loading = false
           this.getFBMessage()
 
           if (nq.psid === undefined) {
@@ -290,6 +332,42 @@ export default {
         console.log(this.recorder.blob)
       },
       deep: true
+    },
+
+    fbmessages: {
+      handler (n, o) {
+        if (n.length > 0) {
+          console.group('watcher : fbmessages')
+          this.voiceMessages.list = []
+
+          n.forEach((m) => {
+            if (m.message === '') {
+              console.log('emty')
+              this.voiceMessages.list.push(m.id)
+            }
+          })
+
+          console.log(this.voiceMessages.list)
+
+          console.groupEnd()
+        }
+      },
+      deep: true
+    },
+
+    'voiceMessages.list' (n, o) {
+      console.log('n', n.length)
+      console.log('o', o.length)
+      console.log('loading', this.voiceMessages.loading)
+
+      if (n.length > 0 && o.length === 0 && !this.voiceMessages.loading) {
+        if (!this.voiceMessages.loading) { this.voiceMessages.loading = true }
+        console.log('loading', this.voiceMessages.loading)
+
+        n.forEach((mid) => {
+          this.getAttachments(mid)
+        })
+      }
     }
   },
 
@@ -344,7 +422,6 @@ export default {
 
         if (mType === 'text') {
           payload.message.text = mType === 'text' ? m : 'Voice Message.'
-
           await Facebook.api(`/me/messages?access_token=${this.currentPage.access_token}`, 'post', payload)
             .then((res) => {
               this.resetRecorder(true)
@@ -446,13 +523,48 @@ export default {
         this.fbmessages = []
         this.visibility.controls = false
       }
+      this.fbmessages = []
 
+      // await Facebook.api(`/${this.$route.query.mid}/messages`, 'get', {
+      await this.$sender({
+        method: 'get',
+        url: `${this.$route.query.mid}/messages?access_token=${this.currentPage.access_token}`,
+        baseURL: 'https://graph.facebook.com/v14.0',
+        data: {
+          fields: 'id,created_time,message,from,to,tags'
+        },
+        headers: {
+          contentType: 'application/json'
+        }
+      }).then((res) => {
+        this.fbmessages = res.content.data.data
+        this.visibility.controls = true
+        this.sending = {
+          status: false,
+          text: ''
+        }
+      }).catch((error) => {
+        this.$notify.error({
+          title: 'Sorry, something went wrong.',
+          message: 'There was an error while getting the messages. Please try again later.'
+        })
+
+        this.$cg({
+          type: 'error',
+          title: 'Facebook Send Message Error',
+          logs: error
+        })
+      })
+
+      /*
       await Facebook.api(`/${this.$route.query.mid}/messages`, 'get', {
         fields: 'created_time,id,message,from,to,tags',
         access_token: this.currentPage.access_token
       })
         .then((res) => {
           this.fbmessages = res.data
+          console.log('getFbMessage')
+          console.log(this.fbmessages)
           this.visibility.controls = true
           this.sending = {
             status: false,
@@ -471,6 +583,52 @@ export default {
             logs: error
           })
         })
+        */
+    },
+
+    async getAttachments (mid) {
+      const fmwa = this.fbmessages.find(fm => fm.id === mid)
+
+      if (typeof (fmwa) !== 'undefined') {
+        const p = {
+          method: 'get',
+          url: `${mid}/attachments?access_token=${this.currentPage.access_token}`,
+          baseURL: 'https://graph.facebook.com/v14.0',
+          data: {
+            fields: 'id,mime_type,name,size,file_url'
+          },
+          headers: {
+            contentType: 'application/json'
+          }
+        }
+
+        await this.$sender(p).then((res) => {
+          console.group('showing')
+          console.log(fmwa)
+          const r = res.content.data.data
+          if (r.length === 1) {
+          // fb message with attachment
+          // console.log(fmwa)
+            fmwa.attachment = r[0]
+            this.fbmessages[this.fbmessages.findIndex(m => m.id === mid)] = fmwa
+            console.log(this.fbmessages[this.fbmessages.findIndex(m => m.id === mid)])
+            this.rerenderx += 1
+          }
+
+          this.voiceMessages.list = this.voiceMessages.list.filter(l => l !== mid)
+
+          if (this.voiceMessages.list.length === 0) {
+            this.voiceMessages.loading = false
+          }
+
+          console.log(this.voiceMessages.list)
+          console.groupEnd()
+        })
+      } else {
+        console.group('else')
+        console.log('not showing')
+        console.groupEnd()
+      }
     },
 
     isSent (tags) {
@@ -614,6 +772,7 @@ export default {
 
       console.log(r)
     }
+
   }
 }
 </script>
