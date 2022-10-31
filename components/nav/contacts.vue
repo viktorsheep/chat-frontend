@@ -1,10 +1,16 @@
 <template>
-  <div v-loading="!loaded.messages" element-loading-background="rgb(238, 238, 238)" style="margin-top: -10px;">
+  <div
+    v-loading="!loaded.messages"
+    element-loading-background="rgb(238, 238, 238)"
+    style="margin-top: -10px"
+  >
     <div class="wrap-conversations">
       <div
         v-for="c in conversations"
         :key="c.id"
-        :class="`wrap-fb-user ${c.unread_count > 0 ? 'unread' : ''} ${c.id === activeId ? 'active' : ''}`"
+        :class="`wrap-fb-user ${c.unread_count > 0 ? 'unread' : ''} ${
+          c.id === activeId ? 'active' : ''
+        }`"
         @click="handleConversationClick(c)"
       >
         <span class="name">
@@ -19,7 +25,7 @@
           {{ c.unread_count }}
         </span>
 
-        <div style="clear:both;" />
+        <div style="clear: both" />
 
         <div class="snippet">
           {{ c.snippet }}
@@ -27,14 +33,18 @@
       </div>
     </div>
 
-    <el-button type="default" size="small" class="btn-back" @click="handleCloseNav">
+    <el-button
+      type="default"
+      size="small"
+      class="btn-back"
+      @click="handleCloseNav"
+    >
       Back
     </el-button>
   </div>
 </template>
 
 <script>
-import * as Facebook from 'fb-sdk-wrapper'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -102,23 +112,19 @@ export default {
     },
 
     async getFbConversations (silent = false) {
-      this.conversations = []
-
       if (!silent) {
         this.loaded.messages = false
       }
 
       await this.$sender({
         method: 'get',
-        url: `${this.currentPage.page_id}/conversations?access_token=${this.currentPage.access_token}`,
-        baseURL: 'https://graph.facebook.com/v14.0',
-        data: {
-          fields: 'unread_count,subject,snippet,senders,can_reply,message_count,updated_time,participants'
-        },
+        url: `${this.currentPage.page_id}/conversations/${this.currentPage.access_token}`,
+        data: {},
         headers: {
           contentType: 'application/json'
         }
       }).then((res) => {
+        console.log(res.content.data.data)
         this.conversations = []
         this.conversations = res.content.data.data
         this.loaded.messages = true
@@ -131,13 +137,18 @@ export default {
       })
     },
 
-    async userProfile (id) {
-      console.log(this.currentPage)
-      const x = await Facebook.api(`/${this.currentPage.page_id}`, 'GET', {
-        access_token: this.currentPage.access_token
+    // for what ??
+    async userProfile () {
+      await this.$sender({
+        method: 'get',
+        url: `${this.currentPage.page_id}`,
+        data: {},
+        headers: {
+          contentType: 'application/json'
+        }
+      }).then((res) => {
+        console.log(res)
       })
-      console.log(x)
-      return x
     },
 
     handleConversationClick (c) {
@@ -203,117 +214,116 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.wrap {
+  .wrap {
+    &-conversations {
+      height: calc(100vh - 100px);
+    }
 
-  &-conversations {
-    height: calc(100vh - 100px);
-  }
-
-  &-fb-user {
-    height: 80px;
-    line-height: 80px;
-    padding-left: 15px;
-    padding-right: 10px;
-    background: white;
-    color: #999;
-    border-bottom: 1px solid #f5f5f5;
-    cursor: pointer;
-    position: relative;
-    transition: all 200ms ease-in-out;
-
-    &:before {
-      content: '';
-      width: 5px;
-      height: 60px;
-      position: absolute;
-      border-radius: 0 5px 5px 0;
-      left: -5px;
-      top: 10px;
+    &-fb-user {
+      height: 80px;
+      line-height: 80px;
+      padding-left: 15px;
+      padding-right: 10px;
       background: white;
-      transition: all 200ms ease-in-out;
-    }
-
-    &:hover {
-      background: #fafafa;
-      padding-left: 20px;
-
-      &:before {
-        background: #ccc;
-        left: 0px;
-      }
-    }
-
-    &.unread {
-      color: #777;
-      font-weight: bolder;
-    }
-
-    &.active {
-      background: #f5f5f5;
-      padding-left: 20px;
-
-      &:before {
-        left: 0;
-        background: rgb(31, 145, 242);
-      }
-    }
-
-    .name {
-      float:left;
-      width: 100px;
-      height: 26px;
-      line-height: 26px;
-      margin-top: 10px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .count {
-      width: 20px;
-      height: 20px;
-      line-height: 20px;
-      text-align: center;
-      margin-top: 10px;
-      float: right;
-      color: white;
-      background: #F56C6C;
-      border-radius: 11px;
-      font-size: 10px;
-      font-weight: bolder;
-
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-    }
-
-    .time {
-      position: absolute;
-      right: 10px;
-      top: 10px;
-      font-size:10px;
-      height: 26px;
-      line-height: 26px;
-      color: #ccc;
-    }
-
-    .snippet {
-      width: calc(100% - 30px);
-      height: 44px;
-      line-height: 44px;
-      font-size: 14px;
-      // font-weight: normal;
       color: #999;
-      overflow:hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      border-bottom: 1px solid #f5f5f5;
+      cursor: pointer;
+      position: relative;
+      transition: all 200ms ease-in-out;
+
+      &:before {
+        content: '';
+        width: 5px;
+        height: 60px;
+        position: absolute;
+        border-radius: 0 5px 5px 0;
+        left: -5px;
+        top: 10px;
+        background: white;
+        transition: all 200ms ease-in-out;
+      }
+
+      &:hover {
+        background: #fafafa;
+        padding-left: 20px;
+
+        &:before {
+          background: #ccc;
+          left: 0px;
+        }
+      }
+
+      &.unread {
+        color: #777;
+        font-weight: bolder;
+      }
+
+      &.active {
+        background: #f5f5f5;
+        padding-left: 20px;
+
+        &:before {
+          left: 0;
+          background: rgb(31, 145, 242);
+        }
+      }
+
+      .name {
+        float: left;
+        width: 100px;
+        height: 26px;
+        line-height: 26px;
+        margin-top: 10px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .count {
+        width: 20px;
+        height: 20px;
+        line-height: 20px;
+        text-align: center;
+        margin-top: 10px;
+        float: right;
+        color: white;
+        background: #f56c6c;
+        border-radius: 11px;
+        font-size: 10px;
+        font-weight: bolder;
+
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+      }
+
+      .time {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        font-size: 10px;
+        height: 26px;
+        line-height: 26px;
+        color: #ccc;
+      }
+
+      .snippet {
+        width: calc(100% - 30px);
+        height: 44px;
+        line-height: 44px;
+        font-size: 14px;
+        // font-weight: normal;
+        color: #999;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
     }
   }
-}
 
-.btn-back {
-  width: calc(100% - 40px);
-  margin-left: 20px;
-  margin-bottom: 7px;
-}
+  .btn-back {
+    width: calc(100% - 40px);
+    margin-left: 20px;
+    margin-bottom: 7px;
+  }
 </style>

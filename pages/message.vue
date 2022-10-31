@@ -22,17 +22,14 @@
       </el-button>
     </el-empty>
 
-    <div v-else style="background: white;">
+    <div v-else style="background: white">
       <div
         :key="rerenderx"
         v-loading="!visibility.controls && $route.query.psid !== undefined"
         element-loading-text="Getting Messages"
         class="wrap-messages"
       >
-        <div
-          v-if="sending.status"
-          class="message sent sending"
-        >
+        <div v-if="sending.status" class="message sent sending">
           <div class="text">
             <i class="el-icon-loading" />
             {{ sending.text }}
@@ -51,10 +48,13 @@
               <div v-if="m.hasOwnProperty('attachment')">
                 <div
                   v-if="m.attachment.mime_type.startsWith('audio/')"
-                  style="height: 54px; line-height: 54px;"
+                  style="height: 54px; line-height: 54px"
                 >
                   <audio controls>
-                    <source :src="m.attachment.file_url" :type="m.attachment.mime_type">
+                    <source
+                      :src="m.attachment.file_url"
+                      :type="m.attachment.mime_type"
+                    />
                   </audio>
                 </div>
               </div>
@@ -63,7 +63,7 @@
                 v-else
                 v-loading="true"
                 element-loading-background="rgba(0, 0, 0, 0)"
-                style="width: 300px; height: 54px; color: white;"
+                style="width: 300px; height: 54px; color: white"
               />
             </div>
             <div v-else>
@@ -82,32 +82,37 @@
                   {{ parseDate(m.created_time).date }}
                 </span>
               </el-tooltip>
-            </div> <!-- e.o Sent Time -->
+            </div>
+            <!-- e.o Sent Time -->
           </div>
 
-          <div style="clear: both;" />
+          <div style="clear: both" />
         </div>
       </div>
       <!-- Rejoin -->
-      <div
-        v-if="selectedPage === 'Left.'"
-        class="wrap-rejoin"
-      >
+      <div v-if="selectedPage === 'Left.'" class="wrap-rejoin">
         You left this page chat.
         <el-button type="primary" size="small" @click="handleRejoinClick">
           Rejoin Now
         </el-button>
-      </div> <!-- e.o Rejoin -->
+      </div>
+      <!-- e.o Rejoin -->
 
       <!-- Input Controls -->
       <div v-if="visibility.controls" class="wrap-control">
         <el-input
           v-model="message"
-          :placeholder="selectedPage === 'Left.' ? 'You cannot send messages because you have left the page. Join again to be able to send messages again.' : 'Press enter to send ...'"
+          :placeholder="
+            selectedPage === 'Left.'
+              ? 'You cannot send messages because you have left the page. Join again to be able to send messages again.'
+              : 'Press enter to send ...'
+          "
           size="small"
           clearable
-          style="width: calc(100% - 50px);"
-          :disabled="selectedPage === 'Left.' ? true : false || visibility.recPop"
+          style="width: calc(100% - 50px)"
+          :disabled="
+            selectedPage === 'Left.' ? true : false || visibility.recPop
+          "
           @keyup.enter.native="sendMessage"
         />
 
@@ -141,9 +146,7 @@
               />
             </div>
 
-            <div
-              v-if="recorder.hasBlob"
-            >
+            <div v-if="recorder.hasBlob">
               <audio
                 id="recordedAudio"
                 :controls="recorder.player.controls"
@@ -151,9 +154,7 @@
                 autoplay="false"
               />
 
-              <div
-                style="margin-top: 10px;"
-              >
+              <div style="margin-top: 10px">
                 <!-- TODO : Change back @click to sendMessage('audio') -->
                 <!-- @click="sendMessage('audio')" -->
                 <!-- @click="uploadBlob()" -->
@@ -180,30 +181,36 @@
           <el-button
             slot="reference"
             type="text"
-            :style="`width: 40px; color: #${visibility.recPop ? 'F56C6C' : '409EFF'};`"
+            :style="`width: 40px; color: #${
+              visibility.recPop ? 'F56C6C' : '409EFF'
+            };`"
             :disabled="selectedPage === 'Left.' ? true : false"
             @click="visibility.recPop = !visibility.recPop"
           >
-            <i :class="visibility.recPop ? 'el-icon-close' : 'el-icon-microphone'" />
+            <i
+              :class="
+                visibility.recPop ? 'el-icon-close' : 'el-icon-microphone'
+              "
+            />
           </el-button>
         </el-popover>
 
         <el-button
           v-else
           type="text"
-          style="width: 40px;"
+          style="width: 40px"
           @click="sendMessage('text')"
         >
           <i class="el-icon-s-promotion" />
         </el-button>
-      </div> <!-- e.o Input Controls -->
+      </div>
+      <!-- e.o Input Controls -->
     </div>
   </div>
 </template>
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import * as Facebook from 'fb-sdk-wrapper'
 // import Recorder from 'audio-recorder-js'
 
 export default {
@@ -406,13 +413,11 @@ export default {
           status: true,
           text: mType === 'text' ? m : 'Voice Message.'
         }
-
         const payload = mType === 'text'
           ? {
-              recipient: {
-                id: this.$route.query.psid
-              },
-              message: {}
+              recipient_id: this.$route.query.psid,
+              message: {},
+              access_token: this.currentPage.access_token
             }
           : new FormData()
 
@@ -421,26 +426,29 @@ export default {
         // then : add url to message.payload.url
 
         if (mType === 'text') {
-          payload.message.text = mType === 'text' ? m : 'Voice Message.'
-          await Facebook.api(`/me/messages?access_token=${this.currentPage.access_token}`, 'post', payload)
-            .then((res) => {
-              this.resetRecorder(true)
-              this.getFBMessage(true)
+          payload.message = mType === 'text' ? m : 'Voice Message.'
+          await this.$sender({
+            method: 'post',
+            url: 'me/send-messages',
+            data: payload
+          }).then((res) => {
+            this.resetRecorder(true)
+            this.getFBMessage(true)
+          }).catch((error) => {
+            this.$notify.error({
+              title: 'Sorry, something went wrong.',
+              message: 'There was an error while sending the message. Please try again later.'
             })
-            .catch((error) => {
-              this.$notify.error({
-                title: 'Sorry, something went wrong.',
-                message: 'There was an error while sending the message. Please try again later.'
-              })
 
-              this.$cg({
-                type: 'error',
-                title: 'Facebook Send Message Error',
-                logs: error
-              })
+            this.$cg({
+              type: 'error',
+              title: 'Facebook Send Message Error',
+              logs: error
             })
+          })
         } else {
-          payload.append('recipient', JSON.stringify({ id: this.$route.query.psid }))
+          payload.append('recipient_id', this.$route.query.psid)
+          payload.append('access_token', this.currentPage.access_token)
           payload.append('message', JSON.stringify({
             attachment: {
               type: 'audio',
@@ -449,21 +457,17 @@ export default {
           }))
           payload.append('filedata', this.recorder.blob)
 
-          const p = {
+          await this.$sender({
             method: 'post',
-            url: `/me/messages?access_token=${this.currentPage.access_token}`,
-            baseURL: 'https://graph.facebook.com/v14.0',
+            url: 'me/send-voice',
             data: payload,
             headers: {
               contentType: 'formData'
             }
-          }
-
-          await this.$sender(p)
-            .then((res) => {
-              this.resetRecorder(true)
-              this.getFBMessage(true)
-            })
+          }).then((res) => {
+            this.resetRecorder(true)
+            this.getFBMessage(true)
+          })
         }
       }
     },
@@ -779,9 +783,8 @@ export default {
 
 <style lang="scss" scoped>
   .wrap {
-
     &-rejoin {
-      background: #D8EDFF;
+      background: #d8edff;
       height: 50px;
       line-height: 50px;
       margin-top: -91px;
@@ -789,7 +792,7 @@ export default {
       padding: 0 20px;
       text-align: center;
       color: #777;
-      border: 1px solid #1F91F2;
+      border: 1px solid #1f91f2;
       border-radius: 8px;
     }
 
@@ -831,11 +834,9 @@ export default {
               color: #999;
             }
           }
-
         }
 
         &:hover {
-
           .text {
             opacity: 0.8;
           }
@@ -846,17 +847,15 @@ export default {
         }
 
         &.sent {
-
           &.sending {
-
             .text {
-              opacity: .6;
+              opacity: 0.6;
             }
           }
 
           .text {
             float: right;
-            background: #1F91F2;
+            background: #1f91f2;
             color: white;
             margin-bottom: 40px;
 
@@ -864,7 +863,6 @@ export default {
               right: 0;
               text-align: right;
             }
-
           }
 
           &:hover {
@@ -877,7 +875,6 @@ export default {
         }
 
         &.received {
-
           .text {
             float: left;
             color: #777;
@@ -888,9 +885,7 @@ export default {
             }
           }
         }
-
       }
-
     }
 
     &-control {
