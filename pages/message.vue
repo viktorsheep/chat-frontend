@@ -54,7 +54,7 @@
                     <source
                       :src="m.attachment.file_url"
                       :type="m.attachment.mime_type"
-                    />
+                    >
                   </audio>
                 </div>
               </div>
@@ -447,7 +447,7 @@ export default {
             })
           })
         } else {
-          payload.append('recipient_id', this.$route.query.psid)
+          payload.append('recipient', JSON.stringify({ id: this.$route.query.psid }))
           payload.append('access_token', this.currentPage.access_token)
           payload.append('message', JSON.stringify({
             attachment: {
@@ -680,15 +680,16 @@ export default {
     },
 
     initRecorder () {
-      navigator.mediaDevices.getUserMedia({ audio: true })
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false })
         .then((stream) => {
-          this.recorder.fn = new MediaRecorder(stream)
+          const mime = ['audio/wav', 'audio/mpeg', 'audio/webm', 'audio/ogg'].filter(MediaRecorder.isTypeSupported)[0]
+          this.recorder.fn = new MediaRecorder(stream, { mimeType: mime })
           this.recorder.is.initiated = true
 
           this.recorder.fn.ondataavailable = (e) => {
             this.recorder.chunks.push(e.data)
             if (this.recorder.fn.state === 'inactive') {
-              const blob = new Blob(this.recorder.chunks, { type: 'audio/wav' })
+              const blob = new Blob(this.recorder.chunks, { type: this.recorder.chunks[0].type })
               this.recorder.player.src = URL.createObjectURL(blob)
               this.recorder.player.controls = true
 
