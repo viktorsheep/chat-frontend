@@ -10,7 +10,7 @@
         :key="c.id"
         :class="`wrap-fb-user ${c.unread_count > 0 ? 'unread' : ''} ${
           c.id === activeId ? 'active' : ''
-        }`"
+        } ${theme}`"
         @click="handleConversationClick(c)"
       >
         <span class="name">
@@ -36,7 +36,7 @@
     <el-button
       type="default"
       size="small"
-      class="btn-back"
+      :class="`btn-back ${theme}`"
       @click="handleCloseNav"
     >
       Back
@@ -60,7 +60,8 @@ export default {
 
   computed: {
     ...mapGetters({
-      pages: 'pages/pages'
+      pages: 'pages/pages',
+      theme: 'settings/theme'
     }),
 
     currentPage () {
@@ -318,6 +319,16 @@ export default {
         white-space: nowrap;
         text-overflow: ellipsis;
       }
+
+      &.dark {
+        color: #777;
+        background: #454545;
+        border-bottom: 1px solid #777;
+
+        .name {
+          color: #ccc;
+        }
+      }
     }
   }
 
@@ -325,5 +336,10 @@ export default {
     width: calc(100% - 40px);
     margin-left: 20px;
     margin-bottom: 7px;
+
+    &.dark {
+      background: #454545;
+      border-color: #454545;
+    }
   }
 </style>
