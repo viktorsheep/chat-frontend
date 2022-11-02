@@ -2,6 +2,7 @@
   <div
     v-loading="loading.wrap"
     element-loading-text="Retrieving Information..."
+    :element-loading-background="theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'"
   >
     <el-empty
       v-if="selectedPage === null"
@@ -22,11 +23,13 @@
       </el-button>
     </el-empty>
 
-    <div v-else style="background: white">
+    <div v-else>
       <div
         :key="rerenderx"
         v-loading="!visibility.controls && $route.query.psid !== undefined"
         element-loading-text="Getting Messages"
+        :element-loading-background="theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'"
+
         class="wrap-messages"
       >
         <div v-if="sending.status" class="message sent sending">
@@ -99,7 +102,19 @@
       <!-- e.o Rejoin -->
 
       <!-- Input Controls -->
-      <div v-if="visibility.controls" class="wrap-control">
+      <div v-if="visibility.controls" :class="`wrap-control ${theme}`">
+        <input
+          v-model="message"
+          type="text"
+          class="input"
+          :placeholder="
+            selectedPage === 'Left.'
+              ? 'You cannot send messages because you have left the page. Join again to be able to send messages again.'
+              : 'Press enter to send...'
+          "
+          :disabled="selectedPage === 'Left.' ? true : false || visibility.recPop"
+          @keyup.enter="sendMessage"
+        >
         <el-input
           v-model="message"
           :placeholder="
@@ -109,7 +124,8 @@
           "
           size="small"
           clearable
-          style="width: calc(100% - 50px)"
+          style="display: none; width: calc(100% - 50px)"
+          class="blue"
           :disabled="
             selectedPage === 'Left.' ? true : false || visibility.recPop
           "
@@ -279,7 +295,8 @@ export default {
     ...mapGetters({
       messages: 'messages/messages',
       messageAll: 'messages/messageAll',
-      pages: 'pages/pages'
+      pages: 'pages/pages',
+      theme: 'settings/theme'
     }),
 
     currentPage () {
@@ -898,7 +915,70 @@ export default {
       margin-bottom: -20px;
       margin-left: -20px;
       margin-right: -20px;
-    }
+      // transition: all 300ms ease-in-out;
+
+      .input {
+        display: inline-block;
+        outline: none;
+        padding: 10px;
+        border: 0px solid transparent;
+        border-radius: 5px;
+        background: rgba(0,0,0,0.1);
+        // background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);
+        color: #454545;
+        width: calc(100% - 66px);
+      }
+
+      &.dark {
+        background: #454545;
+        box-shadow: 0px -10px 20px rgba(0,0,0,0.1);
+
+        .input {
+          background: rgba(255,255,255,0.08);
+          color: #ddd;
+
+          &::placeholder {
+            color: #999;
+          }
+
+          &:focus {
+            background: rgba(255,255,255,0.1);
+          }
+        }
+
+        .blue {
+          input {
+            background: blue;
+          }
+        }
+
+        .el-input--small .el-input__inner {
+          background: blue;
+          }
+        }
+
+        .el-input--small .el-input__inner {
+          background: blue;
+        }
+
+        .el-input {
+          // background: blue;
+
+          &__innner {
+            background: blue;
+          }
+
+          &--small {
+            .el-input__inner {
+              background: blue;
+            }
+          }
+
+          .el-input__inner {
+            background: blue !important;
+          }
+        }
+      }
 
     &-recorder {
       text-align: center;
