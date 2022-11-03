@@ -1,8 +1,11 @@
+<!-- eslint-disable vue/html-self-closing -->
 <template>
   <div
     v-loading="loading.wrap"
     element-loading-text="Retrieving Information..."
-    :element-loading-background="theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'"
+    :element-loading-background="
+      theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
+    "
   >
     <el-empty
       v-if="selectedPage === null"
@@ -24,12 +27,17 @@
     </el-empty>
 
     <div v-else>
+      <!-- Audio -->
+      <audio :key="audio.src" controls autoplay>
+        <source :src="audio.src" :type="audio.type" />
+      </audio>
       <div
         :key="rerenderx"
         v-loading="!visibility.controls && $route.query.psid !== undefined"
         element-loading-text="Getting Messages"
-        :element-loading-background="theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'"
-
+        :element-loading-background="
+          theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
+        "
         class="wrap-messages"
       >
         <div v-if="sending.status" class="message sent sending">
@@ -53,12 +61,8 @@
                   v-if="m.attachment.mime_type.startsWith('audio/')"
                   style="height: 54px; line-height: 54px"
                 >
-                  <audio controls>
-                    <source
-                      :src="m.attachment.file_url"
-                      :type="m.attachment.mime_type"
-                    >
-                  </audio>
+                  <!-- Audio Play -->
+                  <button @click="playAudio(m)">Play</button>
                 </div>
               </div>
               <!-- Else -->
@@ -112,9 +116,11 @@
               ? 'You cannot send messages because you have left the page. Join again to be able to send messages again.'
               : 'Press enter to send...'
           "
-          :disabled="selectedPage === 'Left.' ? true : false || visibility.recPop"
+          :disabled="
+            selectedPage === 'Left.' ? true : false || visibility.recPop
+          "
           @keyup.enter="sendMessage"
-        >
+        />
         <el-input
           v-model="message"
           :placeholder="
@@ -233,6 +239,10 @@ export default {
   layout: 'app',
   data () {
     return {
+      audio: {
+        src: '',
+        type: ''
+      },
       message: '',
       selectedPage: null,
       msgControl: {
@@ -420,6 +430,13 @@ export default {
       getMessages: 'messages/browse'
     }),
 
+    playAudio (m) {
+      this.audio = m
+      this.audio.src = m.attachment.file_url
+      this.audio.type = m.attachment.mime_type
+      console.log(this.audio)
+    },
+
     async sendMessage (mType = 'text') {
       if (this.$route.query.psid !== undefined) {
         console.log(mType)
@@ -549,11 +566,8 @@ export default {
       // await Facebook.api(`/${this.$route.query.mid}/messages`, 'get', {
       await this.$sender({
         method: 'get',
-        url: `${this.$route.query.mid}/messages?access_token=${this.currentPage.access_token}`,
-        baseURL: 'https://graph.facebook.com/v14.0',
-        data: {
-          fields: 'id,created_time,message,from,to,tags'
-        },
+        url: `${this.$route.query.mid}/messages/${this.currentPage.access_token}`,
+        data: {},
         headers: {
           contentType: 'application/json'
         }
@@ -613,11 +627,8 @@ export default {
       if (typeof (fmwa) !== 'undefined') {
         const p = {
           method: 'get',
-          url: `${mid}/attachments?access_token=${this.currentPage.access_token}`,
-          baseURL: 'https://graph.facebook.com/v14.0',
-          data: {
-            fields: 'id,mime_type,name,size,file_url'
-          },
+          url: `${mid}/attachments/${this.currentPage.access_token}`,
+          data: {},
           headers: {
             contentType: 'application/json'
           }
@@ -923,7 +934,7 @@ export default {
         padding: 10px;
         border: 0px solid transparent;
         border-radius: 5px;
-        background: rgba(0,0,0,0.1);
+        background: rgba(0, 0, 0, 0.1);
         // background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.2) 100%);
         color: #454545;
         width: calc(100% - 66px);
@@ -931,10 +942,10 @@ export default {
 
       &.dark {
         background: #454545;
-        box-shadow: 0px -10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0px -10px 20px rgba(0, 0, 0, 0.1);
 
         .input {
-          background: rgba(255,255,255,0.08);
+          background: rgba(255, 255, 255, 0.08);
           color: #ddd;
 
           &::placeholder {
@@ -942,7 +953,7 @@ export default {
           }
 
           &:focus {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
           }
         }
 
@@ -954,31 +965,31 @@ export default {
 
         .el-input--small .el-input__inner {
           background: blue;
-          }
         }
+      }
 
-        .el-input--small .el-input__inner {
+      .el-input--small .el-input__inner {
+        background: blue;
+      }
+
+      .el-input {
+        // background: blue;
+
+        &__innner {
           background: blue;
         }
 
-        .el-input {
-          // background: blue;
-
-          &__innner {
+        &--small {
+          .el-input__inner {
             background: blue;
           }
+        }
 
-          &--small {
-            .el-input__inner {
-              background: blue;
-            }
-          }
-
-          .el-input__inner {
-            background: blue !important;
-          }
+        .el-input__inner {
+          background: blue !important;
         }
       }
+    }
 
     &-recorder {
       text-align: center;
