@@ -133,6 +133,13 @@ export default {
       : process.env.LOCAL_URL + process.env.BASE_URL
   },
 
+  publicRuntimeConfig: {
+    facebookAppID: process.env.FACEBOOK_APP_ID,
+    baseURL: process.env.APP_ENV === 'production'
+      ? process.env.PUBLIC_URL + process.env.BASE_URL
+      : process.env.LOCAL_URL + process.env.BASE_URL
+  },
+
   /*
   router: {
     middleware: ['auth']
