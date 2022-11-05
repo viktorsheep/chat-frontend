@@ -119,7 +119,7 @@ export default {
 
       await this.$sender({
         method: 'get',
-        url: `${this.currentPage.page_id}/conversations/${this.currentPage.access_token}`,
+        url: `${this.currentPage.page_id}/conversations`,
         data: {},
         headers: {
           contentType: 'application/json'
@@ -156,31 +156,13 @@ export default {
       this.activeId = c.id
       const p = c.participants.data
       const x = p.filter(p => p.id !== this.currentPage.page_id + '')
-      console.log(x[0].id)
 
       if (this.$route.query.mid === undefined || this.$route.query.mid !== c.id) {
         this.$router.replace({ query: { ...this.$route.query, mid: c.id, psid: x[0].id } })
       }
-      /*
-      await Facebook.api(`/${c.id}/messages`, 'get', {
-        fields: 'created_time,id,message,from,to,tags',
-        access_token: this.currentPage.access_token
-      })
-        .then((res) => {
-          console.log(res)
-        })
-        .catch((error) => {
-          console.log('error')
-          console.log(error)
-        })
-      */
     },
 
     convertRelativeTime (t) {
-      // const now = new Date()
-      // const e = Date.parse(t)
-      // console.log(e)
-      // return e
       const currentDate = new Date()
       const currentTimeInms = currentDate.getTime()
       const targetDate = new Date(t)

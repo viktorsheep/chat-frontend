@@ -70,17 +70,6 @@ export default {
   },
 
   mounted () {
-    /*
-    Facebook.load()
-      .then(() => {
-        console.log('fb loaded')
-        Facebook.init({
-          // appId: 981023695815288 // prohouse
-          appId: 1593537531031479 // ekballo
-          // appId: 1025874564725988 // NNS Demo : NOTE : To Change Later
-        })
-      })
-      */
   },
 
   methods: {
