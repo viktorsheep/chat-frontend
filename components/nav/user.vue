@@ -1,16 +1,18 @@
 <template>
-  <div style="margin-top: 10px;">
+  <div style="margin-top: 10px">
     <div
       v-if="!visibility.contactNav"
       v-loading="loading.userPages"
       element-loading-text="Loading pages..."
       element-loading-background="rgba(0, 0, 0, 0.5)"
-      style="min-height: calc(100vh - 80px);"
+      style="min-height: calc(100vh - 80px)"
     >
       <div
         v-for="p in data.userPages"
         :key="p.id"
-        :class="`wrap-contacts ${p.page_id === parseInt($route.query.page) ? 'active' : ''}`"
+        :class="`wrap-contacts ${
+          p.page_id === parseInt($route.query.page) ? 'active' : ''
+        }`"
         @click="handlePageClick(p)"
       >
         {{ helper().getPageName(p.page_id).name }}
@@ -70,6 +72,7 @@ export default {
   },
 
   mounted () {
+    // this.page_id = this.currentPage.page_id
   },
 
   methods: {
@@ -147,7 +150,7 @@ export default {
     user-select: none; /* Standard */
 
     &:hover {
-      background: rgba(0,0,0,0.1);
+      background: rgba(0, 0, 0, 0.1);
       padding-left: 20px;
       padding-right: 0px;
     }

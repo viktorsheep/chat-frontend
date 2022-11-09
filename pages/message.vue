@@ -31,18 +31,29 @@
       <div :class="`wrap-audio-player ${visibility.audioPlayer ? 'show' : ''}`">
         <div class="wrap-timeline">
           <div class="timeline">
-            <div class="current" :style="`width: ${audioPlayer.duration}%`"></div>
+            <div
+              class="current"
+              :style="`width: ${audioPlayer.duration}%`"
+            ></div>
           </div>
         </div>
 
-        <div class="timelabel" :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`">
+        <div
+          class="timelabel"
+          :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`"
+        >
           {{ audioPlayer.timeLabel }}
         </div>
 
-        <div class="close" :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`" @click="visibility.audioPlayer = false">
+        <div
+          class="close"
+          :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`"
+          @click="visibility.audioPlayer = false"
+        >
           <i class="el-icon-close" />
         </div>
-      </div> <!-- e.o Audio Player -->
+      </div>
+      <!-- e.o Audio Player -->
 
       <!-- Message list -->
       <div
@@ -70,7 +81,10 @@
           <div class="text">
             <div v-if="m.message === ''">
               <!-- If Message is attachment -->
-              <div v-if="m.hasOwnProperty('attachment')" style="min-width: 54px; text-align: center;">
+              <div
+                v-if="m.hasOwnProperty('attachment')"
+                style="min-width: 54px; text-align: center"
+              >
                 <div
                   v-if="m.attachment.mime_type.startsWith('audio/')"
                   style="height: 54px; line-height: 54px"
@@ -112,7 +126,7 @@
                 </span>
               </el-tooltip>
             </div>
-          <!-- e.o Sent Time -->
+            <!-- e.o Sent Time -->
           </div>
 
           <div style="clear: both" />
@@ -256,6 +270,7 @@ export default {
   layout: 'app',
   data () {
     return {
+      eventSource: null,
       audioPlayer: {
         source: null,
         src: '',
@@ -328,7 +343,8 @@ export default {
       messages: 'messages/messages',
       messageAll: 'messages/messageAll',
       pages: 'pages/pages',
-      theme: 'settings/theme'
+      theme: 'settings/theme',
+      notifications: 'notifications/notifications'
     }),
 
     audioDuration () {
@@ -351,16 +367,21 @@ export default {
 
   watch: {
     '$route.query' (nq, oq) {
-      if (nq.page !== undefined) {
+      if (Object.prototype.hasOwnProperty.call(nq, 'page')) {
         this.setPageOn(nq.page)
 
-        if (nq.mid !== undefined) {
+        if (this.eventSource === null) {
+          console.log('es null')
+          this.setupStream()
+        }
+
+        if (Object.prototype.hasOwnProperty.call(nq, 'mid')) {
           this.fbmessages = []
           this.voiceMessages.list = []
           this.voiceMessages.loading = false
           this.getFBMessage()
 
-          if (nq.psid === undefined) {
+          if (Object.prototype.hasOwnProperty.call(nq, 'psid')) {
             this.visibility.controls = false
           }
         } else {
@@ -369,6 +390,14 @@ export default {
         }
       } else {
         this.selectedPage = null
+        console.log(this.eventSource)
+
+        if (this.eventSource !== null) {
+          this.eventSource.close()
+          this.eventSource = null
+        }
+
+        console.log('close')
       }
     },
 
@@ -393,14 +422,16 @@ export default {
 
     fbmessages: {
       handler (n, o) {
-        if (n !== 'undefined' && n.length > 0) {
-          this.voiceMessages.list = []
+        if (typeof (n) !== 'undefined') {
+          if (n.length > 0) {
+            this.voiceMessages.list = []
 
-          n.forEach((m) => {
-            if (m.message === '') {
-              this.voiceMessages.list.push(m.id)
-            }
-          })
+            n.forEach((m) => {
+              if (m.message === '') {
+                this.voiceMessages.list.push(m.id)
+              }
+            })
+          }
         }
       },
       deep: true
@@ -443,8 +474,36 @@ export default {
 
   methods: {
     ...mapActions({
-      getMessages: 'messages/browse'
+      getMessages: 'messages/browse',
+      updateNotification: 'notifications/updateNotification'
     }),
+
+    setupStream () {
+      if (typeof (EventSource) !== 'undefined') {
+        this.eventSource = new EventSource(`${this.$config.baseURL}noti/${this.currentPage.page_id}`)
+
+        this.eventSource.addEventListener('message', (event) => {
+          if (event.data === '') {
+            return
+          }
+          if (event.data === this.notifications) {
+            return
+          }
+          this.updateNotification(event.data)
+          this.getFBMessage()
+          console.log('vuex' + this.notifications)
+        }, false)
+
+        this.eventSource.addEventListener('error', (event) => {
+          if (event.readyState === EventSource.CLOSED) {
+            console.log('Event was closed')
+            console.log(EventSource)
+          }
+        }, false)
+      } else {
+        console.log('Sorry, your browser does not support server-sent events...')
+      }
+    },
 
     setAudio (m) {
       this.audioPlayer.src = m.attachment.file_url
@@ -861,7 +920,7 @@ export default {
             cursor: pointer;
 
             &:hover {
-              background: rgba(0,0,0,0.1);
+              background: rgba(0, 0, 0, 0.1);
             }
           }
 
@@ -984,14 +1043,14 @@ export default {
 
     &-audio {
       &-player {
-        background: rgba(0,0,0, .1);
+        background: rgba(0, 0, 0, 0.1);
         backdrop-filter: blur(15px);
         position: absolute;
         top: -60px;
         height: 60px;
         width: 100%;
         z-index: 999;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.0);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0);
         transition: all 200ms ease-in-out;
 
         audio {
@@ -1010,7 +1069,7 @@ export default {
           top: 0;
           right: 0;
           cursor: pointer;
-          opacity: .5;
+          opacity: 0.5;
 
           &:hover {
             opacity: 1;
@@ -1035,7 +1094,7 @@ export default {
           .timeline {
             height: 5px;
             width: 100%;
-            background: rgba(255,255,255,0.5);
+            background: rgba(255, 255, 255, 0.5);
             border-radius: 2.5px;
             position: absolute;
             top: calc((60px / 2) - 2.5px);
@@ -1047,7 +1106,11 @@ export default {
               top: 0;
               left: 0;
               border-radius: 2.5px;
-              background: linear-gradient(135deg, rgba(31,145,242,1) 0%, rgba(0,84,156,1) 100%);
+              background: linear-gradient(
+                135deg,
+                rgba(31, 145, 242, 1) 0%,
+                rgba(0, 84, 156, 1) 100%
+              );
               transition: all 300ms;
             }
           }
@@ -1055,11 +1118,11 @@ export default {
 
         &.show {
           top: 0;
-          box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+          box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
         }
 
         &.dark {
-          background: rgba(0,0,0,0.5);
+          background: rgba(0, 0, 0, 0.5);
 
           .close {
             color: red;
