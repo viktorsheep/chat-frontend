@@ -1,5 +1,5 @@
 <template>
-  <span style="float: left;">
+  <span style="float: left">
     {{ page.name }}
   </span>
   <!--
@@ -103,7 +103,7 @@ export default {
       }
 
       await this.$sender(payload).then((res) => {
-        this.$router.push('/message')
+        this.$router.push('/pages')
       })
     }
   }
