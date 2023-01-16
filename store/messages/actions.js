@@ -30,7 +30,7 @@ const actions = {
       method: 'get',
       url: `${dv.path}browse/${id}`
     }
-    console.log(id)
+    console.log('id', id)
 
     await this.$sender(payload).then((res) => {
       console.log(res)

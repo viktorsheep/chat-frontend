@@ -13,13 +13,15 @@
     </el-form-item>
 
     <el-form-item label="" prop="password">
-      <el-input v-model="form.password" placeholder="Your Password" show-password />
+      <el-input
+        v-model="form.password"
+        placeholder="Your Password"
+        show-password
+      />
     </el-form-item>
 
-    <el-form-item style="text-align: center;">
-      <el-button type="primary" @click="handleLogin">
-        Login
-      </el-button>
+    <el-form-item style="text-align: center">
+      <el-button type="primary" @click="handleLogin"> Login </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -60,14 +62,12 @@ export default {
           this.$auth.setUserToken(res.data.access_token)
             .then((res) => {
               console.log(this.$auth.user)
-              this.$router.push(`${this.$auth.user.user_role_id === 1 ? '/admin/dashboard' : '/message'}`)
+              this.$router.push(`${this.$auth.user.user_role_id === 1 ? '/admin/dashboard' : '/pages'}`)
               this.$message({
                 showClose: true,
                 message: `Welcome back ${this.$auth.user.name}.`,
                 type: 'success'
               })
-
-              this.handle().updateFirebase()
             })
 
           console.log(this.$auth.loggedIn)
@@ -83,56 +83,6 @@ export default {
           message: 'Your email or password is incorrect',
           type: 'error'
         })
-      }
-    },
-
-    handle () {
-      const self = this
-
-      return {
-        async updateFirebase () {
-          const deleted = await self.$fire.messaging.deleteToken()
-
-          if (!deleted) { return }
-
-          const token = await self.$fire.messaging.getToken()
-
-          console.group('Firebase Token')
-          console.log(token)
-          console.groupEnd()
-
-          await self.$sender({
-            method: 'put',
-            url: `user/${self.$auth.user.id}/update/firebase_token`,
-            data: {
-              firebase_token: token
-            }
-          }).then((res) => {
-            self.firebase().startOnMessageListener()
-          })
-        }
-      }
-    },
-
-    firebase () {
-      const self = this
-
-      return {
-        startOnMessageListener () {
-          self.$fire.messaging.onMessage((payload) => {
-            // Notification
-            self.$notify({
-              title: payload.notification.title,
-              message: payload.notification.body
-            })
-
-            // TODO: Update Facebook Chat
-          })
-        },
-
-        async deleteToken () {
-          return await self.$fire.messaging.deleteToken()
-        }
       }
     }
   }
