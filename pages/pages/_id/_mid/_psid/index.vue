@@ -378,7 +378,7 @@ export default {
         x = { ...this.pages.find(p => p.id === parseInt(data)) }
       }
 
-      console.log('x', this.$route.params.id, this.pages)
+      console.log('current page', x)
 
       return x
     },
@@ -396,44 +396,6 @@ export default {
 
         this.getMessages(x.page_id)
       }
-    },
-
-    $route (nq, oq) {
-      console.log('n', nq)
-      // if (Object.prototype.hasOwnProperty.call(nq, 'page')) {
-      let x = {}
-      x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-      this.setPageOn(x.page_id)
-
-      // if (this.eventSource === null) {
-      // console.log('es null')
-      this.setupStream()
-      // }
-
-      // if (Object.prototype.hasOwnProperty.call(nq, 'mid')) {
-      this.fbmessages = []
-      this.voiceMessages.list = []
-      this.voiceMessages.loading = false
-      this.getFBMessage()
-
-      // if (Object.prototype.hasOwnProperty.call(nq, 'psid')) {
-      this.visibility.controls = false
-      // }
-      // } else {
-      // this.fbmessages = []
-      // this.visibility.controls = false
-      // }
-      // } else {
-      //   this.selectedPage = null
-      //   console.log(this.eventSource)
-
-      //   if (this.eventSource !== null) {
-      //     this.eventSource.close()
-      //     this.eventSource = null
-      //   }
-
-      //   console.log('close')
-      // }
     },
 
     message (nv, ov) {
@@ -490,24 +452,12 @@ export default {
   },
 
   mounted () {
+    console.log('params', this.$route.params)
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
-    // if (this.$route.query.page !== undefined) {
-    // let x = {}
-    // x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-    // console.log('mounted', this.$route.params.id)
-    // if (this.$route.query.mid !== undefined) {
-    // if (this.$route.query.psid === undefined) {
-    // }
-    // } else {
-    // this.fbmessages = []
-    // this.visibility.controls = false
-    // }
-    // } else {
-    //   this.selectedPage = null
-    //   this.loading.wrap = false
-    // }
+
+    this.$root.$on('new-message', (res) => { this.getFBMessage() })
   },
 
   methods: {
@@ -515,33 +465,6 @@ export default {
       getMessages: 'messages/browse',
       updateNotification: 'notifications/updateNotification'
     }),
-
-    setupStream () {
-      if (typeof (EventSource) !== 'undefined') {
-        this.eventSource = new EventSource(`${this.$config.baseURL}noti/${this.currentPage.page_id}`)
-
-        this.eventSource.addEventListener('message', (event) => {
-          if (event.data === '') {
-            return
-          }
-          if (event.data === this.notifications) {
-            return
-          }
-          this.updateNotification(event.data)
-          this.getFBMessage()
-          console.log('vuex' + this.notifications)
-        }, false)
-
-        this.eventSource.addEventListener('error', (event) => {
-          if (event.readyState === EventSource.CLOSED) {
-            console.log('Event was closed')
-            console.log(EventSource)
-          }
-        }, false)
-      } else {
-        console.log('Sorry, your browser does not support server-sent events...')
-      }
-    },
 
     async setAudio (m) {
       this.isPlaying = true
@@ -727,10 +650,10 @@ export default {
 
     async getFBMessage (silent = false) {
       if (!silent) {
-        this.fbmessages = []
-        this.visibility.controls = false
+        // this.fbmessages = []
+        this.visibility.controls = true
       }
-      this.fbmessages = []
+      // this.fbmessages = []
 
       if (typeof (this.currentPage.page_id) === 'undefined') {
         return
