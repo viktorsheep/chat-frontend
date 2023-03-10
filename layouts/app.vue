@@ -23,8 +23,7 @@
           <span
             v-if="$auth.user.user_role_id === 1"
             style="color: #e6a23c; float: left"
-            >Super Admin &nbsp;</span
-          >
+          >Super Admin &nbsp;</span>
           <ElmDropdownTopBarPage />
 
           {{ $auth.user.name }}
@@ -62,19 +61,13 @@ export default {
   watch: {
     '$route.params': {
       handler (n, o) {
-        console.group('layout route change')
-        console.log(n)
-
-        if ('id' in n) {
-          const x = { ...this.pages.find(p => p.id === parseInt(n.id)) }
-
-          this.setupStream(x.page_id)
-          console.log(x)
-        } else {
+        if (this.eventSource !== null) {
           this.eventSource.close()
         }
-
-        console.groupEnd()
+        if ('id' in n && this.pages.length !== 0) {
+          const x = { ...this.pages.find(p => p.id === parseInt(n.id)) }
+          this.setupStream(x.page_id)
+        }
       },
       deep: true
     }
@@ -99,7 +92,7 @@ export default {
     },
 
     setupStream (pageId) {
-      if (typeof (EventSource) !== 'undefined') {
+      if (EventSource !== null) {
         this.eventSource = new EventSource(`${this.$config.baseURL}noti/${pageId}`)
         this.eventSource.addEventListener('message', (event) => {
           if (event.data === '') {
@@ -108,9 +101,15 @@ export default {
           if (event.data === this.notifications) {
             return
           }
+          if (event.data === 'undefined') {
+            return
+          }
 
           this.updateNotification(event.data)
           this.$root.$emit('new-message', 'true')
+          console.log('event', event)
+          console.log('event data', event.data)
+          console.log('event notifications', this.notifications)
         }, false)
 
         this.eventSource.addEventListener('error', (event) => {
