@@ -533,6 +533,10 @@ export default {
 
     async sendMessage (mType = 'text') {
       // if (this.$route.query.psid !== undefined) {
+      if (this.message !== '') {
+        mType = 'text'
+      }
+
       const m = this.message + ''
       this.message = ''
 
@@ -556,7 +560,7 @@ export default {
           data: payload
         }).then((res) => {
           this.resetRecorder(true)
-          this.getFBMessage(true)
+          // this.getFBMessage(true)
         }).catch((error) => {
           this.$notify.error({
             title: 'Sorry, something went wrong.',
@@ -589,7 +593,7 @@ export default {
           }
         }).then((res) => {
           this.resetRecorder(true)
-          this.getFBMessage(true)
+          // this.getFBMessage(true)
         })
         // }
       }
