@@ -457,7 +457,7 @@ export default {
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
 
-    this.$root.$on('new-message', (res) => { this.getFBMessage() })
+    this.$root.$on('new-message', (res) => { this.getFBMessage(true) })
   },
 
   methods: {
@@ -560,7 +560,6 @@ export default {
           data: payload
         }).then((res) => {
           this.resetRecorder(true)
-          // this.getFBMessage(true)
         }).catch((error) => {
           this.$notify.error({
             title: 'Sorry, something went wrong.',
@@ -593,7 +592,6 @@ export default {
           }
         }).then((res) => {
           this.resetRecorder(true)
-          // this.getFBMessage(true)
         })
         // }
       }

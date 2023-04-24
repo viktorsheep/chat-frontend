@@ -63,10 +63,12 @@ export default {
       handler (n, o) {
         if (this.eventSource !== null) {
           this.eventSource.close()
+          console.log('event close')
         }
         if ('id' in n && this.pages.length !== 0) {
           const x = { ...this.pages.find(p => p.id === parseInt(n.id)) }
           this.setupStream(x.page_id)
+          console.log('event start', x.page_id)
         }
       },
       deep: true
@@ -104,9 +106,10 @@ export default {
           if (event.data === 'undefined') {
             return
           }
+          console.log(event.data === this.notifications)
 
           this.updateNotification(event.data)
-          this.$root.$emit('new-message', 'true')
+          this.$root.$emit('new-message', event.data)
           console.log('event', event)
           console.log('event data', event.data)
           console.log('event notifications', this.notifications)
