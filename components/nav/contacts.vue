@@ -117,9 +117,9 @@ export default {
         n.map((nData) => {
           this.clone.forEach((oData) => {
             if (oData.unread !== undefined && nData.id === oData.id) {
-              nData.unread = '!'
+              nData.unread = oData.unread
             }
-            if (nData.snippet !== oData.snippet && nData.id === oData.id) {
+            if (nData.snippet !== oData.snippet && nData.id === oData.id && this.$route.params.psid !== nData.senders.data[0].id) {
               nData.unread = '!'
             }
           })
