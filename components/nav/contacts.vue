@@ -4,9 +4,9 @@
     element-loading-background="rgb(238, 238, 238)"
     style="margin-top: -10px"
   >
-    <div class="wrap-conversations">
+    <div :key="key" class="wrap-conversations">
       <div
-        v-for="c in conversations"
+        v-for="c in clone"
         :key="c.id"
         :class="`wrap-fb-user ${c.unread_count > 0 ? 'unread' : ''} ${
           c.id === activeId ? 'active' : ''
@@ -21,8 +21,15 @@
           {{ convertRelativeTime(c.updated_time) }}
         </div>
 
-        <!-- <span v-if="c.unread_count > 0" class="count">
-          {{ c.unread_count }}
+        <span v-if="c.unread !== undefined && c.unread !== ''" class="count">
+          {{ c.unread }}
+        </span>
+        <!-- <span>
+          {{c.snippet}}
+        </span> -->
+
+        <!-- <span v-if="sender_id === c.senders.data[0].id && $route.params.psid !== c.senders.data[0].id" class="count">
+          {{ '!' }}
         </span> -->
 
         <div style="clear: both" />
@@ -54,7 +61,16 @@ export default {
         messages: false
       },
       conversations: [],
-      activeId: 0
+      clone: [],
+      activeId: 0,
+      sender_id: 0,
+      unread_message: 0,
+      snippets: [],
+      notification: {
+        sound: '',
+        audio: ''
+      },
+      key: 0
     }
   },
 
@@ -93,6 +109,27 @@ export default {
       this.getFbConversations()
     },
     */
+    conversations (n, o) {
+      if (this.clone.length === 0) {
+        this.clone = n
+        console.log('o clone', this.clone)
+      } else {
+        n.map((nData) => {
+          this.clone.forEach((oData) => {
+            if (oData.unread !== undefined && nData.id === oData.id) {
+              nData.unread = oData.unread
+            }
+            if (nData.snippet !== oData.snippet && nData.id === oData.id && this.$route.params.psid !== nData.senders.data[0].id) {
+              nData.unread = '!'
+            }
+          })
+          return n
+        })
+        this.clone = n
+        console.log('n clone', this.clone)
+        this.key++
+      } // this.clone = n
+    },
 
     currentPage (n, q) {
       if (n.id !== q.id) {
@@ -102,11 +139,20 @@ export default {
     }
   },
 
-  // mounted () {
-  //   this.getFbConversations()
-  // },
+  mounted () {
+    this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
+
+    // this.sound = await import('~/static/notification-sound.wav')
+    this.configSound()
+  },
 
   methods: {
+
+    configSound () {
+      // this.sound = await import('~/static/notification-sound.wav')
+      this.audio = new Audio('/notification-sound.wav')
+    },
+
     handleCloseNav () {
       this.conversations = []
 
@@ -124,6 +170,15 @@ export default {
       this.$emit('navClosed')
     },
 
+    getNewMessage (res) {
+      const message = JSON.parse(res)
+      this.sender_id = message.entry[0].messaging[0].sender.id
+      if (this.$route.params.psid !== this.sender_id) {
+        this.getFbConversations(true)
+        this.unread_message++
+      }
+    },
+
     async getFbConversations (silent = false) {
       if (!silent) {
         this.loaded.messages = false
@@ -137,9 +192,9 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        console.log(res.content.data.data)
-        this.conversations = []
         this.conversations = res.content.data.data
+
+        this.audio.play()
         this.loaded.messages = true
       }).catch((error) => {
         this.$cg({
@@ -165,6 +220,14 @@ export default {
     },
 
     handleConversationClick (c) {
+      c.unread = ''
+      this.clone.map((cData) => {
+        if (cData.id === c.id) {
+          cData.unread = ''
+        }
+        return this.clone
+      })
+      this.key++
       this.activeId = c.id
       const p = c.participants.data
       const x = p.filter(p => p.id !== this.currentPage.page_id + '')

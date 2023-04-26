@@ -8,6 +8,10 @@
     "
   >
     <el-empty
+      v-if="selectedPage !== null"
+      description="Select chat."
+    />
+    <el-empty
       v-if="selectedPage === null"
       description="Select one of the page at the right side to get started."
     />
