@@ -21,7 +21,9 @@
     </el-form-item>
 
     <el-form-item style="text-align: center">
-      <el-button type="primary" @click="handleLogin"> Login </el-button>
+      <el-button type="primary" @click="handleLogin">
+        Login
+      </el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -62,7 +64,7 @@ export default {
           this.$auth.setUserToken(res.data.access_token)
             .then((res) => {
               console.log(this.$auth.user)
-              this.$router.push(`${this.$auth.user.user_role_id === 1 ? '/admin/dashboard' : '/pages'}`)
+              this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
               this.$message({
                 showClose: true,
                 message: `Welcome back ${this.$auth.user.name}.`,

@@ -13,7 +13,7 @@
           <Logo />
         </div>
         <NavUser v-if="$auth.user.user_role_id === 3" />
-        <NavAdmin v-if="$auth.user.user_role_id === 1" />
+        <NavAdmin v-else />
       </el-aside>
 
       <el-container>
@@ -174,6 +174,8 @@ $brandColor: #1f91f2;
   background: #fff;
   // background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 100%);
   transition: all 300ms ease-in-out;
+  max-height: calc(100vh - 60px);
+  overflow-y: auto;
 
   &.dark {
     // background: rgb(119,119,119);

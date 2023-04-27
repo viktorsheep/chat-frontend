@@ -93,18 +93,16 @@
 
               <el-form label-position="top" label-width="100px" :model="data.user">
                 <!-- Type -->
-                <!--
                 <el-form-item>
                   <el-select v-model="data.user.user_role_id" placeholder="Select User Role">
                     <el-option
                       v-for="r in roles"
                       :key="r.id"
-                      :label="r.name"
+                      :label="r.name === 'Client' ? 'User' : r.name"
                       :value="r.id"
                     />
                   </el-select>
                 </el-form-item>
-                -->
 
                 <!-- Name -->
                 <el-form-item>
