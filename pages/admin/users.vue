@@ -54,6 +54,12 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="Role">
+            <template slot-scope="scope">
+              {{ scope.row.role.name === 'Client' ? 'User' : scope.row.role.name }}
+            </template>
+          </el-table-column>
+
           <el-table-column
             prop="created_at"
             label="Joined At"
@@ -364,6 +370,12 @@ export default {
 
       // return this.pages.filter()
       return pna
+    },
+
+    roleName (id) {
+      const x = this.roles.find(r => r.id === id)
+      console.log(x)
+      return x !== 'undefined' ? x.name : ''
     }
   },
 
