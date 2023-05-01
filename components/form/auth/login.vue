@@ -57,13 +57,9 @@ export default {
             password: this.form.password
           }
         }).then((res) => {
-          console.log(res)
-
           this.$axios.setHeader('Authorization', res.data.access_token)
-          // this.$axios.strategy.token.set(res.data.access_token, 'Bearer')
           this.$auth.setUserToken(res.data.access_token)
             .then((res) => {
-              console.log(this.$auth.user)
               this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
               this.$message({
                 showClose: true,
@@ -71,8 +67,6 @@ export default {
                 type: 'success'
               })
             })
-
-          console.log(this.$auth.loggedIn)
         })
       } catch (err) {
         this.$cg({

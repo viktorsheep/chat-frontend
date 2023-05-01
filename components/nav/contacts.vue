@@ -87,32 +87,16 @@ export default {
         x = { ...this.pages.find(p => p.id === parseInt(data)) }
       }
 
-      console.log('x', this.$route.params.id, this.pages)
-
       return x
-
-      // let x = {}
-      // if (this.$route.query.page !== undefined) {
-      //   x = { ...this.pages.find(p => p.id === parseInt(this.$route.query.page)) }
-      // }
-
-      // console.log(x)
-
-      // return x
     }
 
   },
 
   watch: {
-    /*
-    '$route.query' (nq, oq) {
-      this.getFbConversations()
-    },
-    */
+
     conversations (n, o) {
       if (this.clone.length === 0) {
         this.clone = n
-        console.log('o clone', this.clone)
       } else {
         n.map((nData) => {
           this.clone.forEach((oData) => {
@@ -126,14 +110,12 @@ export default {
           return n
         })
         this.clone = n
-        console.log('n clone', this.clone)
         this.key++
-      } // this.clone = n
+      }
     },
 
     currentPage (n, q) {
       if (n.id !== q.id) {
-        console.log(n, q)
         this.getFbConversations()
       }
     }
@@ -142,31 +124,18 @@ export default {
   mounted () {
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
-    // this.sound = await import('~/static/notification-sound.wav')
     this.configSound()
   },
 
   methods: {
 
     configSound () {
-      // this.sound = await import('~/static/notification-sound.wav')
       this.audio = new Audio('/notification-sound.wav')
     },
 
     handleCloseNav () {
       this.conversations = []
-
-      // const r = this.$route.params
-      // delete r.psid
-      // delete r.mid
-
       this.$router.push('/pages/')
-      // this.$router.replace({
-      //   query: {
-      //     // page: this.$route.query.page
-      //   }
-      // })
-
       this.$emit('navClosed')
     },
 
@@ -202,20 +171,6 @@ export default {
           type: 'error',
           logs: error
         })
-      })
-    },
-
-    // for what ??
-    async userProfile () {
-      await this.$sender({
-        method: 'get',
-        url: `${this.currentPage.page_id}`,
-        data: {},
-        headers: {
-          contentType: 'application/json'
-        }
-      }).then((res) => {
-        console.log(res)
       })
     },
 
@@ -262,13 +217,6 @@ export default {
       if (elapsed < 604800) { // <7 days
         return `${Math.floor(elapsed / (86400))}d`
       }
-      /*
-      if (elapsed < 2628000) { // <1 month
-        return `${targetDate.getDate()} ${MonthNames[targetDate.getMonth()]}`
-      }
-      */
-
-      // return `${targetDate.getDate()} ${MonthNames[targetDate.getMonth()]} ${targetDate.getFullYear()}`
     }
 
   }
@@ -374,7 +322,6 @@ export default {
       height: 44px;
       line-height: 44px;
       font-size: 14px;
-      // font-weight: normal;
       color: #999;
       overflow: hidden;
       white-space: nowrap;

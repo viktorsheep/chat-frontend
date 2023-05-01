@@ -52,7 +52,6 @@ export default {
     }
 
     this.$root.$on('PageJoined', (data) => {
-      console.log(data)
       this.getPageName()
     })
 
@@ -93,7 +92,6 @@ export default {
     },
 
     async leavePage () {
-      console.log(this.page)
       const payload = {
         method: 'put',
         url: `user/page/edit/${this.$route.query.page}`,

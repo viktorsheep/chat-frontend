@@ -47,7 +47,6 @@ const actions = {
 
     await this.$sender(payload).then((res) => {
       if (res.success) {
-        console.log(res)
         commit('SET', res.content.data)
       }
     })

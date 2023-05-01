@@ -18,9 +18,6 @@ export default {
 
     color: white;
     color: #1f91f2;
-    // background: rgba(0,0,0,0.3);
-    // background: white;
-    // width: calc(100% - 40px);
     height: 20px;
     line-height: 20px;
     padding: 10px;
@@ -28,9 +25,6 @@ export default {
     font-weight: 900;
     font-size: 20px;
     text-transform: uppercase;
-    // margin-left: 10px;
-    // margin-top: 10px;
-    // margin-bottom: 10px;
     border-radius: 8px;
 
     .second {

@@ -38,10 +38,7 @@ export default {
   data () {
     const validatePass = (rule, value, callback) => {
       if (value === '') {
-        console.log(value)
         callback(new Error('Please input the password'))
-      // } else if (value.length < 8) {
-        // callback(new Error('Password must be more than 8 characters.'))
       } else {
         if (this.form.password_confirmation !== '') {
           this.$refs.form.validateField('checkPass')
@@ -111,7 +108,6 @@ export default {
             })
           })
         } else {
-          console.log('error submit!!')
           return false
         }
       })

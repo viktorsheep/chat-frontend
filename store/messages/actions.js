@@ -30,10 +30,8 @@ const actions = {
       method: 'get',
       url: `${dv.path}browse/${id}`
     }
-    console.log('id', id)
 
     await this.$sender(payload).then((res) => {
-      console.log(res)
       if (res.success) {
         commit('SET', { id, data: res.content.data })
       }

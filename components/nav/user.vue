@@ -28,7 +28,6 @@
 </template>
 
 <script>
-// import * as Facebook from 'fb-sdk-wrapper'
 import { mapActions, mapGetters } from 'vuex'
 export default {
   data () {
@@ -73,8 +72,6 @@ export default {
   },
 
   mounted () {
-    // this.page_id = this.currentPage.page_id
-    console.log('mp', this.$route.params)
     if ('id' in this.$route.params) {
       this.handlePageClick(this.$route.params.id)
     }
@@ -88,13 +85,6 @@ export default {
     handlePageClick (p) {
       this.visibility.contactNav = true
       this.$router.push('/pages/' + p)
-      // if (p.page_id !== parseInt(this.$route.query.page)) {
-      //   this.$router.replace({ query: { ...this.$route.query, page: p.page_id } })
-      // }
-
-      // const pageDetails = this.helper().getPageName(p.page_id)
-
-      // this.$root.$emit('PageChanged', pageDetails)
     },
 
     handleNavClosed () {
@@ -153,7 +143,7 @@ export default {
   -webkit-user-select: none; /* Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+/Edge */
-  user-select: none; /* Standard */
+  user-select: none;
 
   &:hover {
     background: rgba(0, 0, 0, 0.1);

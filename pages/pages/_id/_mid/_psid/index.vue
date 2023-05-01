@@ -344,17 +344,7 @@ export default {
     }
   },
 
-  // fetch () {
-  //   console.log(this.$route.params.id)
-  //   if (this.$route.params.id !== undefined) {
-  //     let x = {}
-  //     x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-
-  //     this.getMessages(x)
-  //   }
-  // },
   fetch () {
-    console.log('fr', this.$route)
   },
 
   computed: {
@@ -373,12 +363,9 @@ export default {
     currentPage () {
       let x = {}
       const data = this.$route.params.id
-      console.log('computed currentPage')
       if (data !== undefined) {
         x = { ...this.pages.find(p => p.id === parseInt(data)) }
       }
-
-      console.log('current page', x)
 
       return x
     },
@@ -452,7 +439,6 @@ export default {
   },
 
   mounted () {
-    console.log('params', this.$route.params)
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
@@ -468,7 +454,6 @@ export default {
 
     async setAudio (m) {
       this.isPlaying = true
-      console.log('au', m.attachment.file_url)
       await this.$sender({
         method: 'post',
         url: 'message/get-audio',
@@ -476,7 +461,6 @@ export default {
       }).then((res) => {
         this.audioPlayer.src = m.attachment.file_url
         this.audioPlayer.source = new Audio('data:audio/webm;base64,' + res.content.data.blob)
-        console.log(this.audioPlayer.source.duration)
         this.audioPlayer.source.addEventListener('timeupdate', this.timeupdate, false)
         this.audioPlayer.source.addEventListener('pause', (e) => {
           this.audioPlayer.icon = 'el-icon-video-play'
@@ -509,13 +493,7 @@ export default {
         .padStart(2, '0')}`
     },
 
-    // updateTime () {
-    //   this.audioPlayer.source.currentTime = parseFloat((this.audioPlayer.currentTime / 100) * this.audioPlayer.source.duration)
-    // },
-
     playAudio () {
-      console.log(this.audioPlayer.source.duration)
-
       const ap = this.audioPlayer
       if (ap.source.paused) {
         ap.source.play()
@@ -532,7 +510,6 @@ export default {
     },
 
     async sendMessage (mType = 'text') {
-      // if (this.$route.query.psid !== undefined) {
       if (this.message !== '') {
         mType = 'text'
       }
@@ -560,6 +537,7 @@ export default {
           data: payload
         }).then((res) => {
           this.resetRecorder(true)
+          this.getFBMessage(true)
         }).catch((error) => {
           this.$notify.error({
             title: 'Sorry, something went wrong.',
@@ -592,18 +570,16 @@ export default {
           }
         }).then((res) => {
           this.resetRecorder(true)
+          this.getFBMessage(true)
         })
-        // }
       }
     },
 
     setPageOn (page) {
-      console.log('page', page)
       this.checkIfPageExists(page)
     },
 
     async checkIfPageExists (pageId) {
-      console.log(pageId)
       this.loading.wrap = true
 
       const payload = {
@@ -612,7 +588,6 @@ export default {
       }
 
       await this.$sender(payload).then((res) => {
-        console.log('res', res)
         this.selectedPage = res.content.data
         this.loading.wrap = false
       })
@@ -627,10 +602,6 @@ export default {
     },
 
     async initAddEdit (reqType) {
-      // let r = {}
-      // r = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-
-      // const pageId = r.page_id
       const payload = {
         method: reqType === 'add' ? 'post' : 'put',
         url: `user/page/${reqType}/${this.$route.params.id}`
@@ -652,16 +623,12 @@ export default {
 
     async getFBMessage (silent = false) {
       if (!silent) {
-        // this.fbmessages = []
         this.visibility.controls = true
       }
-      // this.fbmessages = []
 
       if (typeof (this.currentPage.page_id) === 'undefined') {
         return
       }
-
-      console.log('it has started')
 
       await this.$sender({
         method: 'get',
@@ -671,7 +638,6 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        console.log('it is done')
         this.fbmessages = res.content.data.data
         this.visibility.controls = true
         this.sending = {
@@ -887,7 +853,7 @@ export default {
     height: calc(100vh - 134px);
     padding: 0 10px;
     padding-top: 10px;
-    user-select: none; /* Standard */
+    user-select: none;
     overflow-y: auto;
     display: flex;
     flex-direction: column-reverse;

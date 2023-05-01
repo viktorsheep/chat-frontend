@@ -367,8 +367,6 @@ export default {
       })
 
       const pna = this.pages.filter(p => !ups.includes(p.id))
-
-      // return this.pages.filter()
       return pna
     },
 
@@ -399,7 +397,6 @@ export default {
       addUser: 'users/add'
     }),
 
-    // All Handle Methods
     handle () {
       const self = this
 

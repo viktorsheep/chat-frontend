@@ -50,7 +50,6 @@ export default {
   }
   .wrap {
     padding: 20px;
-    // box-shadow: 1px 1px 20px 0px #eee;
     background: white;
     border-radius: 10px;
   }

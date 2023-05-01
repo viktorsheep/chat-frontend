@@ -18,9 +18,9 @@
               Login
             </NuxtLink>
 
-            <NuxtLink to="auth/register">
-              Register
-            </NuxtLink>
+            <!-- <NuxtLink to="auth/register"> -->
+            <!-- Register -->
+            <!-- </NuxtLink> -->
           </el-col>
         </el-row>
       </div>

@@ -63,12 +63,12 @@ export default {
       handler (n, o) {
         if (this.eventSource !== null) {
           this.eventSource.close()
-          console.log('event close')
+          console.log('Event closed')
         }
         if ('id' in n && this.pages.length !== 0) {
           const x = { ...this.pages.find(p => p.id === parseInt(n.id)) }
           this.setupStream(x.page_id)
-          console.log('event start', x.page_id)
+          console.log('Event started', x.page_id)
         }
       },
       deep: true
@@ -76,9 +76,8 @@ export default {
   },
 
   mounted () {
-    // console.log(this.$auth.loggedIn)
-    // this.$FbInit()
   },
+
   methods: {
     ...mapActions({
       updateNotification: 'notifications/updateNotification'
@@ -87,7 +86,6 @@ export default {
     handleDropdownCommand (command) {
       if (command === 'logout') {
         this.$auth.logout().then((res) => {
-          console.log(this.$auth.loggedIn)
           this.$router.push('/')
         })
       }
@@ -106,13 +104,15 @@ export default {
           if (event.data === 'undefined') {
             return
           }
-          console.log(event.data === this.notifications)
 
           this.updateNotification(event.data)
           this.$root.$emit('new-message', event.data)
-          console.log('event', event)
-          console.log('event data', event.data)
-          console.log('event notifications', this.notifications)
+
+          console.group('Event')
+          console.log('Event', event)
+          console.log('Event data', event.data)
+          console.log('Event notifications', this.notifications)
+          console.groupEnd()
         }, false)
 
         this.eventSource.addEventListener('error', (event) => {
@@ -122,7 +122,10 @@ export default {
           }
         }, false)
       } else {
-        console.log('Sorry, your browser does not support server-sent events...')
+        this.$notify({
+          title: 'SSE Error',
+          message: 'Sorry, your browser dose not support server-sent events...'
+        })
       }
     }
   }
@@ -163,28 +166,21 @@ $brandColor: #1f91f2;
     background: #454545;
     background: linear-gradient(135deg, #454545 0%, #333333 100%);
     color: #ccc;
-
-    // &:hover {
-    // color: #1f91f2;
-    // }
   }
 }
 
 .main {
   background: #fff;
-  // background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 100%);
   transition: all 300ms ease-in-out;
   max-height: calc(100vh - 60px);
   overflow-y: auto;
 
   &.dark {
-    // background: rgb(119,119,119);
     background: linear-gradient(
       135deg,
       rgba(119, 119, 119, 1) 0%,
       rgb(59, 59, 59) 100%
     );
-    // background: #555;
     box-shadow: inset 10px 0 20px rgba(0, 0, 0, 0.15);
   }
 }
