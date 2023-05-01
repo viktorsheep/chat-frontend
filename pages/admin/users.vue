@@ -372,7 +372,6 @@ export default {
 
     roleName (id) {
       const x = this.roles.find(r => r.id === id)
-      console.log(x)
       return x !== 'undefined' ? x.name : ''
     }
   },

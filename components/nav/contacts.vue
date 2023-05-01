@@ -141,6 +141,10 @@ export default {
 
     getNewMessage (res) {
       const message = JSON.parse(res)
+      if (typeof (message) !== 'object') {
+        return
+      }
+
       this.sender_id = message.entry[0].messaging[0].sender.id
       if (this.$route.params.psid !== this.sender_id) {
         this.getFbConversations(true)
