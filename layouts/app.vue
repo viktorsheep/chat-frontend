@@ -27,7 +27,7 @@
           <ElmDropdownTopBarPage />
 
           {{ $auth.user.name }}
-          <ElmDropdownLightDarkSwitcher />
+          <!-- <ElmDropdownLightDarkSwitcher /> -->
           <ElmDropdownLogout />
         </el-header>
 
