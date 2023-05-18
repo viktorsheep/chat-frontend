@@ -72,10 +72,18 @@ export default {
         }
       },
       deep: true
+    },
+
+    pages (n, o) {
+      if ('psid' in this.$route.params) {
+        const x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
+        this.setupStream(x.page_id)
+      }
     }
   },
 
   mounted () {
+
   },
 
   methods: {
@@ -110,7 +118,7 @@ export default {
 
           console.group('Event')
           console.log('Event', event)
-          console.log('Event data', event.data)
+          console.log('Event data', JSON.parse(event.data))
           console.log('Event notifications', this.notifications)
           console.groupEnd()
         }, false)
