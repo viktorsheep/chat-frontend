@@ -60,6 +60,7 @@ export default {
       loaded: {
         messages: false
       },
+      eventData: {},
       conversations: [],
       clone: [],
       activeId: 0,
@@ -124,10 +125,44 @@ export default {
   mounted () {
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
+    if ('psid' in this.$route.params) {
+      this.reloadConversation()
+    }
+
     this.configSound()
   },
 
   methods: {
+
+    async setClient () {
+      // get page id
+      if (typeof (this.currentPage.page_id) === 'undefined') {
+        return
+      }
+      // get psid
+      if (this.eventData.entry !== undefined) {
+        const senderId = this.eventData.entry[0].messaging[0].sender.id
+
+        if (senderId === this.currentPage.page_id.toString()) {
+          return
+        }
+        // get mid
+        let x = {}
+        x = { ...this.conversations.find(c => c.participants.data.find(p => p.id !== this.currentPage.page_id).id === senderId) }
+        //
+        const payload = {
+          page_index_id: this.$route.params.id,
+          page_id: this.currentPage.page_id,
+          psid: senderId,
+          mid: x.id
+        }
+        await this.$sender({
+          method: 'post',
+          url: '/client/set',
+          data: payload
+        })
+      }
+    },
 
     configSound () {
       this.audio = new Audio('/notification-sound.wav')
@@ -144,6 +179,8 @@ export default {
       if (typeof (message) !== 'object') {
         return
       }
+
+      this.eventData = message
 
       this.sender_id = message.entry[0].messaging[0].sender.id
       if (this.$route.params.psid !== this.sender_id) {
@@ -166,6 +203,7 @@ export default {
         }
       }).then((res) => {
         this.conversations = res.content.data.data
+        this.setClient()
 
         this.audio.play()
         this.loaded.messages = true
@@ -176,6 +214,19 @@ export default {
           logs: error
         })
       })
+    },
+
+    reloadConversation () {
+      const params = this.$route.params
+      this.$router.push('/pages/' + params.id + '/' + params.mid + '/' + params.psid)
+
+      this.clone.map((cData) => {
+        if (cData.id === params.mid) {
+          cData.unread = ''
+        }
+        return this.clone
+      })
+      this.activeId = params.mid
     },
 
     handleConversationClick (c) {
