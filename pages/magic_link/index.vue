@@ -1,11 +1,16 @@
 <template>
   <div>
-    Magic link
+    <div style="margin-bottom: 100px;">
+      Redirecting from magic link
+    </div>
+
+    <div v-loading="true" />
   </div>
 </template>
 
 <script>
 export default {
+  layout: 'redirects',
   data () {
     return {
       client: {}
@@ -24,7 +29,7 @@ export default {
         })
         this.client = client.content.data
 
-        this.$router.push(`/pages/${this.client.page_index_id}/${this.client.mid}/${this.client.psid}`)
+        this.$router.push(typeof this.client.page_index_id !== 'undefined' ? `/pages/${this.client.page_index_id}/${this.client.mid}/${this.client.psid}` : 'magic_link/no_conversation')
       } else {
         return false
       }
