@@ -510,6 +510,11 @@ export default {
     },
 
     async sendMessage (mType = 'text') {
+      const lastMessage = this.renderMessage.slice().find(m => this.isSent(m.tags) === false)
+      let lastDate = ''
+      if (lastMessage) {
+        lastDate = lastMessage.created_time
+      }
       if (this.message !== '') {
         mType = 'text'
       }
@@ -525,7 +530,8 @@ export default {
         ? {
             recipient_id: this.$route.params.psid,
             message: {},
-            access_token: this.currentPage.access_token
+            access_token: this.currentPage.access_token,
+            last_date: lastDate
           }
         : new FormData()
 
@@ -553,6 +559,7 @@ export default {
       } else {
         payload.append('recipient', JSON.stringify({ id: this.$route.params.psid }))
         payload.append('access_token', this.currentPage.access_token)
+        payload.append('last_date', lastDate)
         payload.append('message', JSON.stringify({
           attachment: {
             type: 'audio',
