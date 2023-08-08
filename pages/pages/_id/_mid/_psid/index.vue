@@ -512,9 +512,14 @@ export default {
     async sendMessage (mType = 'text') {
       const lastMessage = this.renderMessage.slice().find(m => this.isSent(m.tags) === false)
       let lastDate = ''
+
+      // close audio recorder popup if the message type is 'audio'
+      if (mType === 'audio') { this.visibility.recPop = false }
+
       if (lastMessage) {
         lastDate = lastMessage.created_time
       }
+
       if (this.message !== '') {
         mType = 'text'
       }

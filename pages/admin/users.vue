@@ -449,6 +449,7 @@ export default {
 
           if (self.data.user.pages.length === 0) { delete self.data.user.pages }
           self.addUser(self.data.user)
+          self.visibility.drawer = false
         },
 
         isActiveChanged (x) {

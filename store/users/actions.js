@@ -6,7 +6,7 @@ const dv = {
 const actions = {
 
   // ADD
-  async add ({ commit }, param) {
+  async add ({ commit, dispatch }, param) {
     const payload = {
       method: 'post',
       url: `${dv.path}add`,
@@ -19,6 +19,7 @@ const actions = {
     await this.$sender(payload).then((res) => {
       if (res.success) {
         commit('ADD', res.content.data)
+        dispatch('users', {})
       }
     })
   }, // e.o ADD
