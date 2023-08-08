@@ -24,7 +24,7 @@ export default {
       if (this.$route.query.psid !== undefined) {
         const client = await this.$sender({
           method: 'get',
-          url: `client/${this.$route.query.psid}/get`,
+          url: `client/${this.$route.query.psid}/${this.$route.query.page_id}/get`,
           data: {}
         })
         this.client = client.content.data
