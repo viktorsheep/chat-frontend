@@ -327,7 +327,7 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        this.conversations = res.content.data.data
+        this.conversations = res.content.data
         this.conversations.forEach(async (c) => {
           payload.mid = c.id
           payload.psid = c.participants.data.find(p => p.id !== page.page_id).id

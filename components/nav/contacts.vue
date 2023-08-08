@@ -202,7 +202,7 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        this.conversations = res.content.data.data
+        this.conversations = res.content.data
         this.setClient()
 
         this.audio.play()
