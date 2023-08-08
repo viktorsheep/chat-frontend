@@ -19,7 +19,7 @@ const actions = {
     await this.$sender(payload).then((res) => {
       if (res.success) {
         commit('ADD', res.content.data)
-        dispatch('users', {})
+        dispatch('users')
       }
     })
   }, // e.o ADD

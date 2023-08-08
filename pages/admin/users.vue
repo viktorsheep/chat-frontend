@@ -56,7 +56,9 @@
 
           <el-table-column label="Role">
             <template slot-scope="scope">
-              {{ scope.row.role.name === 'Client' ? 'User' : scope.row.role.name }}
+              <div v-if="scope.row.role">
+                {{ scope.row.role.name === 'Client' ? 'User' : scope.row.role.name }}
+              </div>
             </template>
           </el-table-column>
 
