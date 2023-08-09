@@ -4,7 +4,30 @@
     element-loading-background="rgb(238, 238, 238)"
     style="margin-top: -10px"
   >
-    <div :key="key" class="wrap-conversations">
+    <div v-if="magicLink" :key="key" class="wrap-conversations">
+      <div
+        :class="`wrap-fb-user ${cloneConversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
+      >
+        <span class="name">
+          {{ cloneConversation.senders.data[0].name }}
+        </span>
+
+        <div class="time">
+          {{ convertRelativeTime(cloneConversation.updated_time) }}
+        </div>
+
+        <span v-if="cloneConversation.unread !== undefined && cloneConversation.unread !== ''" class="count">
+          {{ cloneConversation.unread }}
+        </span>
+
+        <div style="clear: both" />
+
+        <div class="snippet">
+          {{ cloneConversation.snippet }}
+        </div>
+      </div>
+    </div>
+    <div v-else :key="key" class="wrap-conversations">
       <div
         v-for="c in clone"
         :key="c.id"
@@ -38,9 +61,31 @@
           {{ c.snippet }}
         </div>
       </div>
+      <el-button
+        v-if="next"
+        type="default"
+        size="small"
+        :loading="loadMoreLoading"
+        :class="`btn-back ${theme}`"
+        style="margin-top: 10px; margin-bottom: 10px"
+        @click="handleLoadMore"
+      >
+        Load More
+      </el-button>
     </div>
 
     <el-button
+      v-if="magicLink"
+      type="default"
+      size="small"
+      :class="`btn-back ${theme}`"
+      @click="magicLink = false"
+    >
+      Show all conversations
+    </el-button>
+
+    <el-button
+      v-else
       type="default"
       size="small"
       :class="`btn-back ${theme}`"
@@ -61,7 +106,12 @@ export default {
         messages: false
       },
       eventData: {},
+      next: null,
+      magicLink: false,
+      loadMoreLoading: false,
       conversations: [],
+      conversation: {},
+      cloneConversation: {},
       clone: [],
       activeId: 0,
       sender_id: 0,
@@ -115,6 +165,22 @@ export default {
       }
     },
 
+    conversation (n, o) {
+      if (!this.cloneConversation.unread) {
+        this.cloneConversation = n
+      } else {
+        if (this.cloneConversation.unread !== undefined && n.id === this.cloneConversation.id) {
+          n.unread = this.cloneConversation.unread
+        }
+        if (n.snippet !== this.cloneConversation.snippet && n.id === this.cloneConversation.id && this.$route.params.psid !== n.senders.data[0].id) {
+          n.unread = '!'
+        }
+
+        this.cloneConversation = n
+        this.key++
+      }
+    },
+
     currentPage (n, q) {
       if (n.id !== q.id) {
         this.getFbConversations()
@@ -125,6 +191,8 @@ export default {
   mounted () {
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
+    this.$root.$on('magic-link', payload => this.getConversation(payload))
+
     if ('psid' in this.$route.params) {
       this.reloadConversation()
     }
@@ -133,6 +201,19 @@ export default {
   },
 
   methods: {
+
+    async getConversation (payload) {
+      this.magicLink = true
+
+      this.conversation = await this.$sender({
+        method: 'get',
+        url: `${payload.page_id}/${payload.mid}/conversation`,
+        data: {},
+        headers: {
+          contentType: 'application/json'
+        }
+      })
+    },
 
     async setClient () {
       // get page id
@@ -202,12 +283,38 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        this.conversations = res.content.data
+        this.conversations = res.content.data.conversations
+        this.next = res.content.data.next
         this.setClient()
 
         this.audio.play()
         this.loaded.messages = true
       }).catch((error) => {
+        this.$cg({
+          title: 'Facebook get conversations error',
+          type: 'error',
+          logs: error
+        })
+      })
+    },
+
+    async handleLoadMore () {
+      this.loadMoreLoading = true
+      await this.$sender({
+        method: 'get',
+        url: `${this.currentPage.page_id}/conversations?next=${this.next}`,
+        data: {},
+        headers: {
+          contentType: 'application/json'
+        }
+      }).then((res) => {
+        this.conversations = [...this.conversations, ...res.content.data.conversations]
+        this.next = res.content.data.next
+        this.setClient()
+        this.loaded.messages = true
+        this.loadMoreLoading = false
+      }).catch((error) => {
+        this.loadMoreLoading = false
         this.$cg({
           title: 'Facebook get conversations error',
           type: 'error',
@@ -230,6 +337,7 @@ export default {
     },
 
     handleConversationClick (c) {
+      console.log('click')
       c.unread = ''
       this.clone.map((cData) => {
         if (cData.id === c.id) {
