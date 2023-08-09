@@ -6,24 +6,24 @@
   >
     <div v-if="magicLink" :key="key" class="wrap-conversations">
       <div
-        :class="`wrap-fb-user ${conversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
+        :class="`wrap-fb-user ${cloneConversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
       >
         <span class="name">
-          {{ conversation.senders.data[0].name }}
+          {{ cloneConversation.senders.data[0].name }}
         </span>
 
         <div class="time">
-          {{ convertRelativeTime(conversation.updated_time) }}
+          {{ convertRelativeTime(cloneConversation.updated_time) }}
         </div>
 
-        <span v-if="conversation.unread !== undefined && conversation.unread !== ''" class="count">
-          {{ conversation.unread }}
+        <span v-if="cloneConversation.unread !== undefined && cloneConversation.unread !== ''" class="count">
+          {{ cloneConversation.unread }}
         </span>
 
         <div style="clear: both" />
 
         <div class="snippet">
-          {{ conversation.snippet }}
+          {{ cloneConversation.snippet }}
         </div>
       </div>
     </div>
@@ -111,6 +111,7 @@ export default {
       loadMoreLoading: false,
       conversations: [],
       conversation: {},
+      cloneConversation: {},
       clone: [],
       activeId: 0,
       sender_id: 0,
@@ -160,6 +161,22 @@ export default {
           return n
         })
         this.clone = n
+        this.key++
+      }
+    },
+
+    conversation (n, o) {
+      if (!this.cloneConversation.unread) {
+        this.cloneConversation = n
+      } else {
+        if (this.cloneConversation.unread !== undefined && n.id === this.cloneConversation.id) {
+          n.unread = this.cloneConversation.unread
+        }
+        if (n.snippet !== this.cloneConversation.snippet && n.id === this.cloneConversation.id && this.$route.params.psid !== n.senders.data[0].id) {
+          n.unread = '!'
+        }
+
+        this.cloneConversation = n
         this.key++
       }
     },
