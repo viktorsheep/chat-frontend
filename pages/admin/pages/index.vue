@@ -204,6 +204,7 @@ export default {
           }
         }
       },
+      next: null,
 
       conversations: [],
       loading: false,
@@ -319,25 +320,25 @@ export default {
         page_id: page.page_id
       }
 
-      await this.$sender({
-        method: 'get',
-        url: `${page.page_id}/conversations`,
-        data: {},
-        headers: {
-          contentType: 'application/json'
-        }
-      }).then((res) => {
-        this.conversations = res.content.data
-        this.conversations.forEach(async (c) => {
-          payload.mid = c.id
-          payload.psid = c.participants.data.find(p => p.id !== page.page_id).id
-          await this.$sender({
+      do {
+        await this.$sender({
+          method: 'get',
+          url: `${page.page_id}/conversations?next=${this.next}`,
+          data: {},
+          headers: {
+            contentType: 'application/json'
+          }
+        }).then((res) => {
+          this.conversations = res.content.data.conversations
+          this.next = res.content.data.next
+          payload.conversations = this.conversations
+          this.$sender({
             method: 'post',
             url: '/client/set',
             data: payload
           })
         })
-      })
+      } while (this.next)
 
       this.$nextTick(() => {
         this.loading = false
