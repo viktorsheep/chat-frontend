@@ -162,10 +162,6 @@ export default {
   },
 
   mounted () {
-    this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
-
-    // this.$root.$on('magic-link', (payload) => { this.getConversation(payload) })
-
     if ('magic_link' in this.$route.query) {
       const payload = {
         page_id: this.$route.query.page_id,
@@ -177,6 +173,7 @@ export default {
     if ('psid' in this.$route.params) {
       this.reloadConversation()
     }
+    this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
     this.configSound()
   },
