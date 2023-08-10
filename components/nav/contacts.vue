@@ -15,12 +15,6 @@
         <div class="time">
           {{ convertRelativeTime(conversation.updated_time) }}
         </div>
-
-        <div style="clear: both" />
-
-        <div class="snippet">
-          {{ conversation.snippet }}
-        </div>
       </div>
     </div>
     <div v-else :key="key" class="wrap-conversations">
