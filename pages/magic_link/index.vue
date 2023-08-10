@@ -18,6 +18,7 @@ export default {
   },
   mounted () {
     this.checkClient()
+    console.log('magic link')
   },
   methods: {
     async checkClient () {
@@ -29,13 +30,25 @@ export default {
         })
         this.client = client.content.data
 
-        const payload = {
-          page_id: this.$route.query.page_id,
-          mid: this.client.mid
-        }
-        this.$root.$emit('magic-link', payload)
+        this.$router.push({
+          path: typeof this.client.page_index_id !== 'undefined' ? `/pages/${this.client.page_index_id}/${this.client.mid}/${this.client.psid}` : 'magic_link/no_conversation',
+          query: {
+            magic_link: 'true',
+            page_id: this.$route.query.page_id,
+            mid: this.client.mid
+          }
+        })
 
-        this.$router.push(typeof this.client.page_index_id !== 'undefined' ? `/pages/${this.client.page_index_id}/${this.client.mid}/${this.client.psid}` : 'magic_link/no_conversation')
+        // this.$router.push({
+        //   path: '/products',
+        //   query: {
+        //     category: 'electronics',
+        //     priceRange: '100-500',
+        //     sortBy: 'price'
+        //   }
+        // })
+
+        // this.$router.push(typeof this.client.page_index_id !== 'undefined' ? `/pages/${this.client.page_index_id}/${this.client.mid}/${this.client.psid}?magic-link=true&page_id=${this.$route.query.page_id}&mid=${this.client.mid}` : 'magic_link/no_conversation')
       } else {
         return false
       }

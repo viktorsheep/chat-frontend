@@ -77,7 +77,7 @@
       :class="`btn-back ${theme}`"
       @click="magicLink = false"
     >
-      Show all conversations
+      Show other conversations
     </el-button>
 
     <el-button
@@ -170,7 +170,15 @@ export default {
   mounted () {
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
-    this.$root.$on('magic-link', (payload) => { this.getConversation(payload) })
+    // this.$root.$on('magic-link', (payload) => { this.getConversation(payload) })
+
+    if ('magic_link' in this.$route.query) {
+      const payload = {
+        page_id: this.$route.query.page_id,
+        mid: this.$route.query.mid
+      }
+      this.getConversation(payload)
+    }
 
     if ('psid' in this.$route.params) {
       this.reloadConversation()
@@ -182,9 +190,7 @@ export default {
   methods: {
 
     async getConversation (payload) {
-      this.magicLink = true
-
-      this.conversation = await this.$sender({
+      const conversation = await this.$sender({
         method: 'get',
         url: `${payload.page_id}/${payload.mid}/conversation`,
         data: {},
@@ -192,6 +198,8 @@ export default {
           contentType: 'application/json'
         }
       })
+      this.conversation = conversation.content.data
+      this.magicLink = true
     },
 
     async setClient () {
@@ -316,7 +324,6 @@ export default {
     },
 
     handleConversationClick (c) {
-      console.log('click')
       c.unread = ''
       this.clone.map((cData) => {
         if (cData.id === c.id) {
