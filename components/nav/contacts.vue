@@ -6,24 +6,20 @@
   >
     <div v-if="magicLink" :key="key" class="wrap-conversations">
       <div
-        :class="`wrap-fb-user ${cloneConversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
+        :class="`wrap-fb-user ${conversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
       >
         <span class="name">
-          {{ cloneConversation.senders.data[0].name }}
+          {{ conversation.senders.data[0].name }}
         </span>
 
         <div class="time">
-          {{ convertRelativeTime(cloneConversation.updated_time) }}
+          {{ convertRelativeTime(conversation.updated_time) }}
         </div>
-
-        <span v-if="cloneConversation.unread !== undefined && cloneConversation.unread !== ''" class="count">
-          {{ cloneConversation.unread }}
-        </span>
 
         <div style="clear: both" />
 
         <div class="snippet">
-          {{ cloneConversation.snippet }}
+          {{ conversation.snippet }}
         </div>
       </div>
     </div>
@@ -111,7 +107,6 @@ export default {
       loadMoreLoading: false,
       conversations: [],
       conversation: {},
-      cloneConversation: {},
       clone: [],
       activeId: 0,
       sender_id: 0,
@@ -165,22 +160,6 @@ export default {
       }
     },
 
-    conversation (n, o) {
-      if (!this.cloneConversation.unread) {
-        this.cloneConversation = n
-      } else {
-        if (this.cloneConversation.unread !== undefined && n.id === this.cloneConversation.id) {
-          n.unread = this.cloneConversation.unread
-        }
-        if (n.snippet !== this.cloneConversation.snippet && n.id === this.cloneConversation.id && this.$route.params.psid !== n.senders.data[0].id) {
-          n.unread = '!'
-        }
-
-        this.cloneConversation = n
-        this.key++
-      }
-    },
-
     currentPage (n, q) {
       if (n.id !== q.id) {
         this.getFbConversations()
@@ -191,7 +170,7 @@ export default {
   mounted () {
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
-    this.$root.$on('magic-link', payload => this.getConversation(payload))
+    this.$root.$on('magic-link', (payload) => { this.getConversation(payload) })
 
     if ('psid' in this.$route.params) {
       this.reloadConversation()
