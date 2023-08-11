@@ -72,18 +72,19 @@ export default {
         }
       },
       deep: true
-    },
-
-    pages (n, o) {
-      if ('psid' in this.$route.params) {
-        const x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-        this.setupStream(x.page_id)
-      }
     }
   },
 
   mounted () {
-
+    this.$root.$on('restart-stream', (payload) => {
+      if (this.eventSource !== null) {
+        this.eventSource.close()
+      }
+      if ('psid' in this.$route.params) {
+        const x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
+        this.setupStream(x.page_id)
+      }
+    })
   },
 
   methods: {

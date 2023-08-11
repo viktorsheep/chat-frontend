@@ -656,6 +656,7 @@ export default {
           status: false,
           text: ''
         }
+        this.$root.$emit('restart-stream', true)
       }).catch((error) => {
         this.$notify.error({
           title: 'Sorry, something went wrong.',
