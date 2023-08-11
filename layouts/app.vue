@@ -76,13 +76,13 @@ export default {
   },
 
   mounted () {
-    this.$root.$on('restart-stream', (payload) => {
+    this.$root.$on('restart-stream', (callStream) => {
       if (this.eventSource !== null) {
         this.eventSource.close()
       }
       if ('psid' in this.$route.params) {
         const x = { ...this.pages.find(p => p.id === parseInt(this.$route.params.id)) }
-        this.setupStream(x.page_id)
+        this.setupStream(x.page_id, callStream)
       }
     })
   },
@@ -100,7 +100,7 @@ export default {
       }
     },
 
-    setupStream (pageId) {
+    setupStream (pageId, callStream = true) {
       if (EventSource !== null) {
         this.eventSource = new EventSource(`${this.$config.baseURL}noti/${pageId}`)
         this.eventSource.addEventListener('message', (event) => {
@@ -111,6 +111,10 @@ export default {
             return
           }
           if (event.data === 'undefined') {
+            return
+          }
+
+          if (callStream === false) {
             return
           }
 

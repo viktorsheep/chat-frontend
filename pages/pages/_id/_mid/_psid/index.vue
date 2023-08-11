@@ -383,6 +383,8 @@ export default {
 
         this.getMessages(x.page_id)
       }
+      console.log('watch')
+      this.getFBMessage(false, false)
     },
 
     message (nv, ov) {
@@ -442,6 +444,8 @@ export default {
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
+
+    // this.$root.$on('get-fb-message', res => this.getFBMessage())
 
     this.$root.$on('new-message', (res) => { this.getFBMessage(true) })
   },
@@ -633,10 +637,12 @@ export default {
       return x
     },
 
-    async getFBMessage (silent = false) {
+    async getFBMessage (silent = false, callStream = true) {
       if (!silent) {
         this.visibility.controls = true
       }
+
+      console.log(this.currentPage.page_id)
 
       if (typeof (this.currentPage.page_id) === 'undefined') {
         return
@@ -656,7 +662,7 @@ export default {
           status: false,
           text: ''
         }
-        this.$root.$emit('restart-stream', true)
+        this.$root.$emit('restart-stream', callStream)
       }).catch((error) => {
         this.$notify.error({
           title: 'Sorry, something went wrong.',
