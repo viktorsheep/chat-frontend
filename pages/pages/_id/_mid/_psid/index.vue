@@ -27,39 +27,6 @@
     </el-empty>
 
     <div v-else class="wrap-chat">
-      <!-- Audio Player -->
-      <!-- <div :class="`wrap-audio-player ${visibility.audioPlayer ? 'show' : ''}`">
-        <audio controls autoplay :src="audioPlayer.source">
-          <source type="audio/webm" />
-          Your browser does not support the audio element.
-        </audio>
-        <el-progress :percentage="percentage" color="#409eff"></el-progress>
-        <div class="wrap-timeline">
-          <div class="timeline">
-            <div
-              class="current"
-              :style="`width: ${audioPlayer.duration}%`"
-            ></div>
-          </div>
-        </div>
-
-        <div
-          class="timelabel"
-          :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`"
-        >
-          {{ audioPlayer.timeLabel }}
-        </div>
-
-        <div
-          class="close"
-          :style="`color: ${theme === 'dark' ? 'white' : '#454545'};`"
-          @click="stopAudio"
-        >
-          <i class="el-icon-close" />
-        </div>
-      </div> -->
-      <!-- e.o Audio Player -->
-
       <!-- Message list -->
       <div
         :key="rerenderx"
@@ -86,8 +53,19 @@
           <div class="text">
             <div v-if="m.message === ''">
               <!-- If Message is attachment -->
+              <div v-if="m.hasOwnProperty('attachment') && m.attachment === false">
+                Attachment cannot be shown
+              </div>
+              <!-- <div
+                v-else-if="m.hasOwnProperty('attachment') && m.attachment !== false && m.attachment.mime_type.startsWith('image/')"
+                style="min-width: 54px; text-align: center"
+              >
+                {{ m.attachment }}
+                {{ getImageUrl(m.attachment.id) }}
+                <img :src="getImageUrl(m.attachment.id)" alt="Attachment Image" />
+              </div> -->
               <div
-                v-if="m.hasOwnProperty('attachment')"
+                v-else-if="m.hasOwnProperty('attachment') && m.attachment !== false"
                 style="min-width: 54px; text-align: center"
               >
                 <div
@@ -456,6 +434,18 @@ export default {
       updateNotification: 'notifications/updateNotification'
     }),
 
+    // async getImageUrl (id) {
+    //   const img = await this.$sender({
+    //     method: 'post',
+    //     url: 'message/get-image',
+    //     data: {
+    //       id,
+    //       page_id: this.currentPage.page_id
+    //     }
+    //   })
+    //   console.log(img)
+    // },
+
     async setAudio (m) {
       this.isPlaying = true
       await this.$sender({
@@ -694,6 +684,10 @@ export default {
           const r = res.content.data.data
           if (r.length === 1) {
             fmwa.attachment = r[0]
+            this.fbmessages[this.fbmessages.findIndex(m => m.id === mid)] = fmwa
+            this.rerenderx += 1
+          } else {
+            fmwa.attachment = false
             this.fbmessages[this.fbmessages.findIndex(m => m.id === mid)] = fmwa
             this.rerenderx += 1
           }
