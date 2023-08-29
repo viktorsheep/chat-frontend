@@ -6,19 +6,23 @@
     :element-loading-background="
       theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
     "
+    style="overflow:hidden;"
   >
     <el-empty
       v-if="selectedPage !== null"
       description="Select chat."
+      style="min-width: 300px; overflow: hidden;"
     />
     <el-empty
       v-if="selectedPage === null"
       description="Select one of the page at the right side to get started."
+      style="min-width: 300px; overflow: hidden;"
     />
 
     <el-empty
       v-else-if="selectedPage === 'Does not exists.'"
       description="You are not joined to this page. Join now to send prayers."
+      style="min-width: 300px;"
     >
       <el-button
         type="primary"

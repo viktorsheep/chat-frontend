@@ -6,6 +6,8 @@
     :element-loading-background="
       theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
     "
+    style="min-width: 300px;"
+    @click="handleNavCollapse()"
   >
     <el-empty
       v-if="selectedPage === null"
@@ -29,7 +31,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 export default {
   layout: 'app',
   data () {
@@ -44,7 +46,9 @@ export default {
 
   computed: {
     ...mapGetters({
-      theme: 'settings/theme'
+      theme: 'settings/theme',
+      navIsCollapsed: 'settings/navIsCollapsed',
+      isMobile: 'settings/isMobile'
     })
 
   },
@@ -59,6 +63,10 @@ export default {
   },
 
   methods: {
+    ...mapActions({
+      toggleNavCollapse: 'settings/toggleNavCollapse'
+    }),
+
     setPageOn (page) {
       this.checkIfPageExists(page)
     },
@@ -75,6 +83,12 @@ export default {
         this.selectedPage = res.content.data
         this.loading.wrap = false
       })
+    },
+
+    handleNavCollapse () {
+      if (this.isMobile && !this.navIsCollapsed) {
+        this.toggleNavCollapse()
+      }
     }
   }
 }

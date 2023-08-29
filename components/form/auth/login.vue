@@ -9,7 +9,7 @@
     size="medium"
   >
     <el-form-item label="" prop="email">
-      <el-input v-model="form.email" placeholder="Your Email" />
+      <el-input v-model="form.email" placeholder="Your Email" :disabled="disabled.btn.login" />
     </el-form-item>
 
     <el-form-item label="" prop="password">
@@ -17,12 +17,14 @@
         v-model="form.password"
         placeholder="Your Password"
         show-password
+        :disabled="disabled.btn.login"
       />
     </el-form-item>
 
     <el-form-item style="text-align: center">
-      <el-button type="primary" @click="handleLogin">
-        Login
+      <el-button type="primary" :disabled="disabled.btn.login" @click="handleLogin">
+        <i v-if="disabled.btn.login" class="el-icon-loading" />
+        {{ disabled.btn.login ? 'Logging In' : 'Login' }}
       </el-button>
     </el-form-item>
   </el-form>
@@ -44,12 +46,20 @@ export default {
         password: [
           { required: true, message: 'Please enter your password', trigger: 'blur' }
         ]
+      },
+
+      disabled: {
+        btn: {
+          login: false
+        }
       }
     }
   },
   methods: {
     async handleLogin (e) {
       e.preventDefault()
+      this.disabled.btn.login = true
+
       try {
         await this.$auth.loginWith('backend', {
           data: {
@@ -57,9 +67,12 @@ export default {
             password: this.form.password
           }
         }).then((res) => {
+          this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
+
           this.$axios.setHeader('Authorization', res.data.access_token)
           this.$auth.setUserToken(res.data.access_token)
             .then((res) => {
+              this.disabled.btn.login = false
               this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
               this.$message({
                 showClose: true,
@@ -79,6 +92,8 @@ export default {
           message: 'Your email or password is incorrect',
           type: 'error'
         })
+
+        this.disabled.btn.login = false
       }
     }
   }
