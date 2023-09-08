@@ -136,6 +136,7 @@ export default {
   watch: {
 
     conversations (n, o) {
+      console.log(n)
       if (this.clone.length === 0) {
         this.clone = n
       } else {
@@ -267,7 +268,8 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        this.conversations = res.content.data.data
+        console.log(res)
+        this.conversations = res.content.data.conversations
         this.next = res.content.data.next
         this.setClient()
 

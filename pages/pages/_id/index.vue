@@ -13,6 +13,7 @@
       description="Select chat."
       style="min-width: 300px; overflow: hidden;"
     />
+
     <el-empty
       v-if="selectedPage === null"
       description="Select one of the page at the right side to get started."
@@ -54,7 +55,6 @@ export default {
     ...mapGetters({
       theme: 'settings/theme'
     })
-
   },
 
   mounted () {
