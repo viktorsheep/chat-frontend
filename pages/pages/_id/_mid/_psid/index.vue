@@ -27,8 +27,13 @@
     </el-empty>
 
     <div v-else class="wrap-chat">
+      <div v-if="loadMore === true" style="text-align: center;">
+        Loading...
+      </div>
       <!-- Message list -->
       <div
+        id="messages"
+        ref="messages"
         :key="rerenderx"
         v-loading="!visibility.controls && $route.params.psid !== undefined"
         element-loading-text="Getting Messages"
@@ -36,6 +41,7 @@
           theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
         "
         class="wrap-messages"
+        @scroll="handleScroll"
       >
         <div v-if="sending.status" class="message sent sending">
           <div class="text">
@@ -258,6 +264,10 @@ export default {
   layout: 'app',
   data () {
     return {
+      next: null,
+      previousScrollTop: 0,
+      scrollTime: 0,
+      loadMore: false,
       percentage: 0,
       isPlaying: false,
       eventSource: null,
@@ -422,7 +432,6 @@ export default {
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
-
     // this.$root.$on('get-fb-message', res => this.getFBMessage())
 
     this.$root.$on('new-message', (res) => { this.getFBMessage(true) })
@@ -433,6 +442,53 @@ export default {
       getMessages: 'messages/browse',
       updateNotification: 'notifications/updateNotification'
     }),
+
+    async handleScroll (event) {
+      const scrollContainer = this.$refs.messages
+      const difference = scrollContainer.scrollHeight + scrollContainer.scrollTop
+      this.previousScrollTop = scrollContainer.scrollTop
+
+      if (difference - this.scrollTime <= scrollContainer.clientHeight + 1) {
+        this.loadMore = true
+        this.scrollTime++
+
+        if (this.next) {
+          await this.$sender({
+            method: 'get',
+            url: `${this.currentPage.page_id}/${this.$route.params.mid}/messages?next=${this.next}`,
+            data: {},
+            headers: {
+              contentType: 'application/json'
+            }
+          }).then((res) => {
+            this.next = res.content.data.next
+            this.fbmessages = [...this.fbmessages, ...res.content.data.messages]
+            this.visibility.controls = true
+          }).catch((error) => {
+            this.$notify.error({
+              title: 'Sorry, something went wrong.',
+              message: 'There was an error while getting the messages. Please try again later.'
+            })
+
+            this.$cg({
+              type: 'error',
+              title: 'Facebook Get Message Error',
+              logs: error
+            })
+          })
+        }
+
+        this.$nextTick(() => {
+          this.loadMore = false
+          this.scrollToTop()
+        })
+      }
+    },
+
+    scrollToTop () {
+      const scrollContainer = this.$refs.messages
+      scrollContainer.scrollTop = this.previousScrollTop - 1
+    },
 
     // async getImageUrl (id) {
     //   const img = await this.$sender({
@@ -632,8 +688,6 @@ export default {
         this.visibility.controls = true
       }
 
-      console.log(this.currentPage.page_id)
-
       if (typeof (this.currentPage.page_id) === 'undefined') {
         return
       }
@@ -646,7 +700,9 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        this.fbmessages = res.content.data.data
+        this.next = res.content.data.next
+
+        this.fbmessages = res.content.data.messages
         this.visibility.controls = true
         this.sending = {
           status: false,
@@ -661,7 +717,7 @@ export default {
 
         this.$cg({
           type: 'error',
-          title: 'Facebook Send Message Error',
+          title: 'Facebook Get Message Error',
           logs: error
         })
       })
@@ -699,6 +755,12 @@ export default {
           }
         })
       }
+
+      this.$nextTick(() => {
+        if (this.scrollTime !== 0) {
+          this.scrollToTop()
+        }
+      })
     },
 
     isSent (tags) {
