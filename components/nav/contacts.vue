@@ -4,7 +4,7 @@
     element-loading-background="rgb(238, 238, 238)"
     style="margin-top: -10px"
   >
-    <div v-if="magicLink" :key="key" class="wrap-conversations">
+    <div v-if="magicLink" :key="key" class="wrap-conversations is-magiclink">
       <div
         :class="`wrap-fb-user ${conversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
       >
@@ -17,7 +17,7 @@
         </div>
       </div>
     </div>
-    <div v-else :key="key" class="wrap-conversations">
+    <div v-else :key="key" class="wrap-conversations not-magiclink">
       <div
         v-for="c in clone"
         :key="c.id"
@@ -87,7 +87,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 export default {
   data () {
@@ -117,7 +117,8 @@ export default {
   computed: {
     ...mapGetters({
       pages: 'pages/pages',
-      theme: 'settings/theme'
+      theme: 'settings/theme',
+      navIsCollapsed: 'settings/navIsCollapsed'
     }),
 
     currentPage () {
@@ -135,6 +136,7 @@ export default {
   watch: {
 
     conversations (n, o) {
+      console.log(n)
       if (this.clone.length === 0) {
         this.clone = n
       } else {
@@ -170,15 +172,20 @@ export default {
       this.getConversation(payload)
     }
 
-    if ('psid' in this.$route.params) {
-      this.reloadConversation()
-    }
+    if ('psid' in this.$route.params) { this.reloadConversation() }
+
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
 
     this.configSound()
   },
 
   methods: {
+
+    ...mapActions({
+      setCurrentConversation: 'settings/setCurrentConversation',
+      unsetCurrentConversation: 'settings/unsetCurrentConversation',
+      toggleNavCollapse: 'settings/toggleNavCollapse'
+    }),
 
     async getConversation (payload) {
       const conversation = await this.$sender({
@@ -195,9 +202,8 @@ export default {
 
     async setClient () {
       // get page id
-      if (typeof (this.currentPage.page_id) === 'undefined') {
-        return
-      }
+      if (typeof (this.currentPage.page_id) === 'undefined') { return }
+
       // get psid
       if (this.eventData.entry !== undefined) {
         const senderId = this.eventData.entry[0].messaging[0].sender.id
@@ -228,6 +234,7 @@ export default {
     },
 
     handleCloseNav () {
+      this.unsetCurrentConversation()
       this.conversations = []
       this.$router.push('/pages/')
       this.$emit('navClosed')
@@ -261,6 +268,7 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
+        console.log(res)
         this.conversations = res.content.data.conversations
         this.next = res.content.data.next
         this.setClient()
@@ -326,6 +334,7 @@ export default {
       this.activeId = c.id
       const p = c.participants.data
       const x = p.filter(p => p.id !== this.currentPage.page_id + '')
+      this.setCurrentConversation(c.participants.data[0].name)
       if (this.$route.params.psid === x[0].id) {
         const h = this.$createElement
         this.$notify({

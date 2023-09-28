@@ -6,15 +6,19 @@
     :element-loading-background="
       theme === 'light' ? 'rgba(255,255,255,0.5)' : 'rgba(0, 0, 0, 0.5)'
     "
+    style="min-width: 300px"
+    @click="handleMessageWrapClick"
   >
     <el-empty
       v-if="selectedPage === null"
       description="Select one of the page at the right side to get started."
+      style="min-width: 300px;"
     />
 
     <el-empty
       v-else-if="selectedPage === 'Does not exists.'"
       description="You are not joined to this page. Join now to send prayers."
+      style="min-width: 300px;"
     >
       <el-button
         type="primary"
@@ -341,7 +345,9 @@ export default {
       messageAll: 'messages/messageAll',
       pages: 'pages/pages',
       theme: 'settings/theme',
-      notifications: 'notifications/notifications'
+      notifications: 'notifications/notifications',
+      navIsCollapsed: 'settings/navIsCollapsed',
+      isMobile: 'settings/isMobile'
     }),
 
     audioDuration () {
@@ -432,6 +438,10 @@ export default {
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
+
+    if (this.isMobile) {
+      this.toggleNavCollapse()
+    }
     // this.$root.$on('get-fb-message', res => this.getFBMessage())
 
     this.$root.$on('new-message', (res) => { this.getFBMessage(true) })
@@ -440,7 +450,8 @@ export default {
   methods: {
     ...mapActions({
       getMessages: 'messages/browse',
-      updateNotification: 'notifications/updateNotification'
+      updateNotification: 'notifications/updateNotification',
+      toggleNavCollapse: 'settings/toggleNavCollapse'
     }),
 
     async handleScroll (event) {
@@ -896,6 +907,10 @@ export default {
         method: 'delete',
         url: 'file/delete'
       })
+    },
+
+    handleMessageWrapClick () {
+      if (this.isMobile && !this.navIsCollapsed) { this.toggleNavCollapse() }
     }
   }
 }
@@ -926,10 +941,12 @@ export default {
 
   &-messages {
     height: calc(100vh - 134px);
+    min-width: 300px;
     padding: 0 10px;
     padding-top: 10px;
     user-select: none;
     overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column-reverse;
 
@@ -1037,6 +1054,7 @@ export default {
     background: #eee;
     overflow: hidden;
     margin-bottom: -20px;
+    min-width: 300px;
 
     .input {
       display: inline-block;

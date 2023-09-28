@@ -79,7 +79,9 @@ export default {
 
   methods: {
     ...mapActions({
-      getPages: 'pages/browse'
+      getPages: 'pages/browse',
+      setCurrentConversation: 'settings/setCurrentConversation',
+      toggleNavCollapse: 'settings/toggleNavCollapse'
     }),
 
     handlePageClick (p) {
@@ -131,6 +133,7 @@ export default {
   line-height: 40px;
   color: white;
   width: calc(100% - 40px);
+  min-width: 260px;
   margin-left: 10px;
   padding: 0 10px;
   border-radius: 8px;
