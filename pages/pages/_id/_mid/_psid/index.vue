@@ -66,14 +66,12 @@
               <div v-if="m.hasOwnProperty('attachment') && m.attachment === false">
                 Attachment cannot be shown
               </div>
-              <!-- <div
+              <div
                 v-else-if="m.hasOwnProperty('attachment') && m.attachment !== false && m.attachment.mime_type.startsWith('image/')"
                 style="min-width: 54px; text-align: center"
               >
-                {{ m.attachment }}
-                {{ getImageUrl(m.attachment.id) }}
-                <img :src="getImageUrl(m.attachment.id)" alt="Attachment Image" />
-              </div> -->
+                <img :src="m.attachment.image_data.url" alt="Attachment Image" style="width: 200px; height: auto;" />
+              </div>
               <div
                 v-else-if="m.hasOwnProperty('attachment') && m.attachment !== false"
                 style="min-width: 54px; text-align: center"
@@ -500,18 +498,6 @@ export default {
       const scrollContainer = this.$refs.messages
       scrollContainer.scrollTop = this.previousScrollTop - 1
     },
-
-    // async getImageUrl (id) {
-    //   const img = await this.$sender({
-    //     method: 'post',
-    //     url: 'message/get-image',
-    //     data: {
-    //       id,
-    //       page_id: this.currentPage.page_id
-    //     }
-    //   })
-    //   console.log(img)
-    // },
 
     async setAudio (m) {
       this.isPlaying = true
