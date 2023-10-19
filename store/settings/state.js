@@ -1,5 +1,11 @@
 export default () => ({
   settings: {
-    visualMode: 'light'
+    visualMode: 'light',
+    device: 'computer',
+    isMobile: false,
+    nav: {
+      collapse: false,
+      currentConversation: ''
+    }
   }
 })

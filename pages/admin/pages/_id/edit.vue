@@ -6,9 +6,6 @@
 
 <script>
 export default {
-  layout: 'app',
-  mounted () {
-    console.log(this.$route)
-  }
+  layout: 'app'
 }
 </script>

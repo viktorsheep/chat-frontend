@@ -64,28 +64,7 @@ export default {
     // '@nuxtjs/axios',
     // '@nuxtjs/auth-next',
     { src: '@nuxtjs/axios', mode: 'client' },
-    { src: '@nuxtjs/auth-next', mode: 'client' },
-    [
-      '@nuxtjs/firebase', {
-        config: {
-          apiKey: 'AIzaSyDJ6gApAnRTcriv2P9xxiBXw2Epl0rBZmM',
-          authDomain: 'chat-test-e7d6f.firebaseapp.com',
-          projectId: 'chat-test-e7d6f',
-          storageBucket: 'chat-test-e7d6f.appspot.com',
-          messagingSenderId: '627817364736',
-          appId: '1:627817364736:web:2138f30080b69cdede47e5',
-          measurementId: 'G-DG45FCGP3H'
-        },
-        onFirebaseHosting: false,
-        services: {
-          messaging: {
-            createServiceWorker: true,
-            fcmPublicVapidKey: 'BHurDnQy3hMSirsrLs2yi6u4GBAZKUfPza0vkj0U9pM5YGz-9Vh7VzzAwGbtTkEBucXYlOQGQwAIi6FEYU3wjkc',
-            inject: fs.readFileSync('./serviceWorker.js')
-          }
-        }
-      }
-    ]
+    { src: '@nuxtjs/auth-next', mode: 'client' }
     // '@nuxtjs/proxy'
   ],
 
@@ -116,12 +95,11 @@ export default {
       login: '/auth/login',
       logout: '/'
       // callback: '/',
-      // home: '/message'
+      // home: '/pages'
     },
     plugins: [
       '@/plugins/sender',
-      '@/plugins/cg',
-      '@/plugins/facebook-sdk'
+      '@/plugins/cg'
     ]
   },
 
@@ -145,6 +123,10 @@ export default {
     middleware: ['auth']
   },
   */
+
+  router: {
+    mode: 'hash'
+  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {

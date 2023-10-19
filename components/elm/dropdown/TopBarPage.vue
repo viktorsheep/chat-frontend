@@ -1,5 +1,5 @@
 <template>
-  <span style="float: left;">
+  <span style="float: left">
     {{ page.name }}
   </span>
   <!--
@@ -52,7 +52,6 @@ export default {
     }
 
     this.$root.$on('PageJoined', (data) => {
-      console.log(data)
       this.getPageName()
     })
 
@@ -93,7 +92,6 @@ export default {
     },
 
     async leavePage () {
-      console.log(this.page)
       const payload = {
         method: 'put',
         url: `user/page/edit/${this.$route.query.page}`,
@@ -103,7 +101,7 @@ export default {
       }
 
       await this.$sender(payload).then((res) => {
-        this.$router.push('/message')
+        this.$router.push('/pages')
       })
     }
   }

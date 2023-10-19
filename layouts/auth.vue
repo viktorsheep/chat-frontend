@@ -14,7 +14,7 @@
       </el-col>
     </el-row>
     <el-row :gutter="0">
-      <el-col :span="4" :offset="10">
+      <el-col :span="20" :offset="2">
         <div class="wrap">
           <Nuxt />
         </div>
@@ -50,8 +50,9 @@ export default {
   }
   .wrap {
     padding: 20px;
-    // box-shadow: 1px 1px 20px 0px #eee;
     background: white;
     border-radius: 10px;
+    max-width: 300px;
+    margin: 0 auto;
   }
 </style>

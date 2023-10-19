@@ -54,6 +54,14 @@
             </template>
           </el-table-column>
 
+          <el-table-column label="Role">
+            <template slot-scope="scope">
+              <div v-if="scope.row.role">
+                {{ scope.row.role.name === 'Client' ? 'User' : scope.row.role.name }}
+              </div>
+            </template>
+          </el-table-column>
+
           <el-table-column
             prop="created_at"
             label="Joined At"
@@ -93,18 +101,16 @@
 
               <el-form label-position="top" label-width="100px" :model="data.user">
                 <!-- Type -->
-                <!--
                 <el-form-item>
                   <el-select v-model="data.user.user_role_id" placeholder="Select User Role">
                     <el-option
                       v-for="r in roles"
                       :key="r.id"
-                      :label="r.name"
+                      :label="r.name === 'Client' ? 'User' : r.name"
                       :value="r.id"
                     />
                   </el-select>
                 </el-form-item>
-                -->
 
                 <!-- Name -->
                 <el-form-item>
@@ -363,9 +369,12 @@ export default {
       })
 
       const pna = this.pages.filter(p => !ups.includes(p.id))
-
-      // return this.pages.filter()
       return pna
+    },
+
+    roleName (id) {
+      const x = this.roles.find(r => r.id === id)
+      return x !== 'undefined' ? x.name : ''
     }
   },
 
@@ -389,7 +398,6 @@ export default {
       addUser: 'users/add'
     }),
 
-    // All Handle Methods
     handle () {
       const self = this
 
@@ -443,6 +451,7 @@ export default {
 
           if (self.data.user.pages.length === 0) { delete self.data.user.pages }
           self.addUser(self.data.user)
+          self.visibility.drawer = false
         },
 
         isActiveChanged (x) {

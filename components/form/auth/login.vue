@@ -9,16 +9,22 @@
     size="medium"
   >
     <el-form-item label="" prop="email">
-      <el-input v-model="form.email" placeholder="Your Email" />
+      <el-input v-model="form.email" placeholder="Your Email" :disabled="disabled.btn.login" />
     </el-form-item>
 
     <el-form-item label="" prop="password">
-      <el-input v-model="form.password" placeholder="Your Password" show-password />
+      <el-input
+        v-model="form.password"
+        placeholder="Your Password"
+        show-password
+        :disabled="disabled.btn.login"
+      />
     </el-form-item>
 
-    <el-form-item style="text-align: center;">
-      <el-button type="primary" @click="handleLogin">
-        Login
+    <el-form-item style="text-align: center">
+      <el-button type="primary" :disabled="disabled.btn.login" @click="handleLogin">
+        <i v-if="disabled.btn.login" class="el-icon-loading" />
+        {{ disabled.btn.login ? 'Logging In' : 'Login' }}
       </el-button>
     </el-form-item>
   </el-form>
@@ -40,12 +46,20 @@ export default {
         password: [
           { required: true, message: 'Please enter your password', trigger: 'blur' }
         ]
+      },
+
+      disabled: {
+        btn: {
+          login: false
+        }
       }
     }
   },
   methods: {
     async handleLogin (e) {
       e.preventDefault()
+      this.disabled.btn.login = true
+
       try {
         await this.$auth.loginWith('backend', {
           data: {
@@ -53,24 +67,19 @@ export default {
             password: this.form.password
           }
         }).then((res) => {
-          console.log(res)
+          this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
 
           this.$axios.setHeader('Authorization', res.data.access_token)
-          // this.$axios.strategy.token.set(res.data.access_token, 'Bearer')
           this.$auth.setUserToken(res.data.access_token)
             .then((res) => {
-              console.log(this.$auth.user)
-              this.$router.push(`${this.$auth.user.user_role_id === 1 ? '/admin/dashboard' : '/message'}`)
+              this.disabled.btn.login = false
+              this.$router.push(`${this.$auth.user.user_role_id !== 3 ? '/admin/dashboard' : '/pages'}`)
               this.$message({
                 showClose: true,
                 message: `Welcome back ${this.$auth.user.name}.`,
                 type: 'success'
               })
-
-              this.handle().updateFirebase()
             })
-
-          console.log(this.$auth.loggedIn)
         })
       } catch (err) {
         this.$cg({
@@ -83,56 +92,8 @@ export default {
           message: 'Your email or password is incorrect',
           type: 'error'
         })
-      }
-    },
 
-    handle () {
-      const self = this
-
-      return {
-        async updateFirebase () {
-          const deleted = await self.$fire.messaging.deleteToken()
-
-          if (!deleted) { return }
-
-          const token = await self.$fire.messaging.getToken()
-
-          console.group('Firebase Token')
-          console.log(token)
-          console.groupEnd()
-
-          await self.$sender({
-            method: 'put',
-            url: `user/${self.$auth.user.id}/update/firebase_token`,
-            data: {
-              firebase_token: token
-            }
-          }).then((res) => {
-            self.firebase().startOnMessageListener()
-          })
-        }
-      }
-    },
-
-    firebase () {
-      const self = this
-
-      return {
-        startOnMessageListener () {
-          self.$fire.messaging.onMessage((payload) => {
-            // Notification
-            self.$notify({
-              title: payload.notification.title,
-              message: payload.notification.body
-            })
-
-            // TODO: Update Facebook Chat
-          })
-        },
-
-        async deleteToken () {
-          return await self.$fire.messaging.deleteToken()
-        }
+        this.disabled.btn.login = false
       }
     }
   }

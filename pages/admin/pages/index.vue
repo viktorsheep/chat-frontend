@@ -20,6 +20,7 @@
     <el-row style="margin-top: 20px;">
       <el-col>
         <el-table
+          v-loading="loading"
           :data="pages"
           style="width: 100%"
         >
@@ -40,7 +41,7 @@
           <el-table-column
             prop="page_id"
             label="Page ID"
-            width="100"
+            width="150"
           />
 
           <!-- URL -->
@@ -87,7 +88,7 @@
 
           <!-- Actions -->
           <el-table-column
-            width="80"
+            width="120"
             align="center"
           >
             <template slot-scope="scope">
@@ -98,6 +99,14 @@
                 circle
                 plain
                 @click="handle().page.edit(scope.row)"
+              />
+              <el-button
+                type="primary"
+                size="mini"
+                icon="el-icon-refresh"
+                circle
+                plain
+                @click="syncConversations(scope.row)"
               />
             </template>
           </el-table-column>
@@ -195,6 +204,10 @@ export default {
           }
         }
       },
+      next: null,
+
+      conversations: [],
+      loading: false,
 
       data: {
         current: {
@@ -299,6 +312,38 @@ export default {
       addPage: 'pages/add',
       editPage: 'pages/edit'
     }),
+
+    async syncConversations (page) {
+      this.loading = true
+      const payload = {
+        page_index_id: page.id,
+        page_id: page.page_id
+      }
+
+      do {
+        await this.$sender({
+          method: 'get',
+          url: `${page.page_id}/conversations?next=${this.next}`,
+          data: {},
+          headers: {
+            contentType: 'application/json'
+          }
+        }).then((res) => {
+          this.conversations = res.content.data.conversations
+          this.next = res.content.data.next
+          payload.conversations = this.conversations
+          this.$sender({
+            method: 'post',
+            url: '/client/set',
+            data: payload
+          })
+        })
+      } while (this.next)
+
+      this.$nextTick(() => {
+        this.loading = false
+      })
+    },
 
     // Handlers
     handle () {

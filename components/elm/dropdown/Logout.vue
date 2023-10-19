@@ -9,7 +9,6 @@ export default {
   methods: {
     handleClick () {
       this.$auth.logout().then((res) => {
-        console.log(this.$auth.loggedIn)
         this.$router.push('/')
       })
     }
