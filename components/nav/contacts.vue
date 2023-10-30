@@ -367,7 +367,6 @@ export default {
         return `${Math.floor(elapsed / (86400))}d`
       }
     }
-
   }
 }
 </script>
