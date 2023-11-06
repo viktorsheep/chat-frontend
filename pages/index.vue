@@ -35,16 +35,21 @@
         </div>
 
         <div class="attribution">
-          Photo by <a target="_blank"
-            href="https://unsplash.com/@greg_rosenke?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Greg
-            Rosenke</a> on <a target="_blank"
-            href="https://unsplash.com/photos/black-cross-statue-jBI220z-cU4?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>
+          Photo by <a
+            target="_blank"
+            href="https://unsplash.com/@greg_rosenke?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+          >Greg
+            Rosenke</a> on <a
+            target="_blank"
+            href="https://unsplash.com/photos/black-cross-statue-jBI220z-cU4?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash"
+          >Unsplash</a>
         </div>
 
         <img
           v-if="!isMobile"
           src="~/static/images/cross.jpg"
-          alt="https://unsplash.com/photos/black-cross-statue-jBI220z-cU4?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash">
+          alt="https://unsplash.com/photos/black-cross-statue-jBI220z-cU4?utm_content=creditShareLink&utm_medium=referral&utm_source=unsplash"
+        >
       </div>
 
       <!-- Foot -->
