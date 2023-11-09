@@ -6,10 +6,10 @@
   >
     <div class="filter" style="height: 50px">
       <div style="float: right; padding-right: 10px">
-        <ElmDropdownFilterStatus @status="(param) => {filterBy.status = param; filter()}" />
+        <ElmDropdownFilterStatus :statuses="filterBy.statuses" @status="(param) => {filterBy.statuses = param; filter(false)}" />
       </div>
       <div style="float: right; padding-right: 10px">
-        <ElmDropdownFilterResponder @responder="(param) => {filterBy.responder = param, filter()}" />
+        <ElmDropdownFilterResponder :responders="filterBy.responders" @responders="(param) => {filterBy.responders = param, filter(false)}" />
       </div>
     </div>
     <div v-if="magicLink" :key="key" class="wrap-conversations is-magiclink">
@@ -85,6 +85,16 @@
     </el-button>
 
     <el-button
+      v-if="filtered"
+      type="default"
+      size="small"
+      :class="`btn-back ${theme}`"
+      @click="handleCancelFilter"
+    >
+      Cancel Filter
+    </el-button>
+
+    <el-button
       v-else
       type="default"
       size="small"
@@ -106,8 +116,8 @@ export default {
         messages: false
       },
       filterBy: {
-        status: 0,
-        responder: 0
+        statuses: [],
+        responders: []
       },
       filtered: false,
       eventData: {},
@@ -150,7 +160,6 @@ export default {
 
   watch: {
     conversations (n, o) {
-      console.log(n)
       if (this.clone.length === 0) {
         this.clone = n
       } else {
@@ -184,8 +193,6 @@ export default {
         }
         this.key++
       }
-      console.log(this.clone)
-      console.log(this.next)
       this.setClientData()
     },
 
@@ -208,8 +215,8 @@ export default {
     if ('psid' in this.$route.params) { this.reloadConversation() }
 
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
-    this.$root.$on('set-status', (res) => { this.setClientData() })
-    this.$root.$on('set-responder', (res) => { this.setClientData() })
+    this.$root.$on('set-status', (res) => { this.setStatus(res) })
+    this.$root.$on('set-responder', (res) => { this.setResponder(res) })
 
     this.configSound()
   },
@@ -221,22 +228,75 @@ export default {
       toggleNavCollapse: 'settings/toggleNavCollapse'
     }),
 
-    async filter () {
+    handleCancelFilter () {
+      this.filterBy.statuses = []
+      this.filterBy.responders = []
+      this.filtered = false
+      this.getFbConversations(true)
+    },
+
+    async filter (loadMore = true) {
       this.filtered = true
-      const url = `client/${this.filterBy.status}/${this.filterBy.responder}/${this.currentPage.page_id}/get`
+      const payload = {
+        statuses: this.filterBy.statuses,
+        responders: this.filterBy.responders
+      }
+      const url = `client/${this.currentPage.page_id}/filter`
       await this.$sender({
         method: 'get',
-        url: this.next ? this.next : url
+        url: this.next && loadMore ? this.next : url,
+        data: payload
       }).then((res) => {
-        console.log(res.content.data)
-        this.clone = this.next ? [...this.clone, ...res.content.data.data] : res.content.data.data
-        console.log(this.clone)
+        this.clone = this.next && loadMore ? [...this.clone, ...res.content.data.data] : res.content.data.data
         this.next = res.content.data.next_page_url
       })
     },
 
-    setClientData () {
-      console.log(this.clone)
+    setStatus (statusId) {
+      this.clone = this.clone.map((c) => {
+        if (c.id === this.$route.params.mid) {
+          c.status = statusId
+        }
+        return c
+      })
+      console.log('status', this.clone)
+    },
+
+    setResponder (responder) {
+      this.clone = this.clone.map((c) => {
+        if (c.id === this.$route.params.mid) {
+          c.responder = responder
+        }
+        return c
+      })
+      console.log('responder', this.clone)
+    },
+
+    async setClientData (newMessage = false, message = {}) {
+      if (newMessage) {
+        if (!message.message) {
+          return
+        }
+        console.log('set client', this.clone)
+        this.clone = this.clone.map((c) => {
+          if (c.id === this.$route.params.mid) {
+            c.snippet = message.message.text
+          }
+          return c
+        })
+        const inConversation = this.clone.find(c => c.id === this.$route.params.mid)
+
+        const info = { participants: inConversation.participants, snippet: inConversation.snippet, updated_time: inConversation.updated_time }
+        await this.$sender({
+          method: 'put',
+          url: `client/${inConversation.id}/update-additional-information`,
+          data: {
+            info
+          }
+        })
+        this.key++
+        return
+      }
       this.clone.forEach(async (c) => {
         const info = { participants: c.participants, snippet: c.snippet, updated_time: c.updated_time }
 
@@ -251,8 +311,6 @@ export default {
           c.responder = res.content.data.responder
           c.status = res.content.data.status
           c.unread = res.content.data.has_new_message === 0 ? '' : '!'
-          console.log(res.content.data.has_new_message)
-          console.log(c)
           this.key++
         })
       })
@@ -318,9 +376,11 @@ export default {
 
       this.eventData = message
       this.sender_id = message.entry[0].messaging[0].sender.id
-      if (this.$route.params.psid !== this.sender_id) {
+      const recipientId = message.entry[0].messaging[0].recipient.id
+      if (this.$route.params.psid !== this.sender_id && this.$route.params.psid !== recipientId) {
         this.getFbConversations(true)
-        this.unread_message++
+      } else {
+        this.setClientData(true, message.entry[0].messaging[0])
       }
     },
 
@@ -338,7 +398,6 @@ export default {
         }
       }).then((res) => {
         this.conversations = res.content.data.conversations
-        console.log(this.conversations)
 
         if (!this.filtered) {
           this.next = res.content.data.next

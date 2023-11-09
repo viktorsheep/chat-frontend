@@ -647,7 +647,7 @@ export default {
         url: `client/${this.$route.params.psid}/${this.$auth.user.id}/set-responder`,
         data: ''
       }).then((res) => {
-        this.$root.$emit('set-responder', '')
+        this.$root.$emit('set-responder', res.content.data.responder)
       })
     },
 

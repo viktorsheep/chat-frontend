@@ -62,7 +62,7 @@ export default {
       }).then((res) => {
         this.client = res.content.data
         console.log(this.client)
-        this.$root.$emit('set-status', '')
+        this.$root.$emit('set-status', this.client.status)
         this.key++
       })
     }
