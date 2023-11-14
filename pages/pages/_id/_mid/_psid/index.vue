@@ -377,6 +377,7 @@ export default {
       }
       console.log('watch')
       this.getFBMessage(false, false)
+      console.log('watch pages')
     },
 
     message (nv, ov) {
@@ -436,13 +437,19 @@ export default {
     this.visibility.controls = false
     this.setPageOn(this.$route.params.id)
     this.getFBMessage()
+    console.log('mounted')
 
     if (this.isMobile) {
       this.toggleNavCollapse()
     }
     // this.$root.$on('get-fb-message', res => this.getFBMessage())
 
-    this.$root.$on('new-message', (res) => { this.getFBMessage(true) })
+    this.$root.$on('new-message', (res) => {
+      if (this.$route.params.mid) {
+        this.getFBMessage(true)
+      };
+      console.log('event on')
+    })
   },
 
   methods: {
@@ -557,6 +564,7 @@ export default {
     },
 
     async sendMessage (mType = 'text') {
+      console.log('send message')
       const lastMessage = this.renderMessage.slice().find(m => this.isSent(m.tags) === false)
       let lastDate = ''
 
@@ -632,6 +640,15 @@ export default {
           this.getFBMessage(true)
         })
       }
+
+      // set responder
+      await this.$sender({
+        method: 'put',
+        url: `client/${this.$route.params.psid}/${this.$auth.user.id}/set-responder`,
+        data: ''
+      }).then((res) => {
+        this.$root.$emit('set-responder', res.content.data.responder)
+      })
     },
 
     setPageOn (page) {
@@ -688,6 +705,8 @@ export default {
       if (typeof (this.currentPage.page_id) === 'undefined') {
         return
       }
+
+      console.log('get fb messages')
 
       await this.$sender({
         method: 'get',

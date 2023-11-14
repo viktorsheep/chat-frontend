@@ -37,6 +37,7 @@
             </div>
           </div>
         </div>
+
         <NavUser v-if="$auth.user.user_role_id === 3" />
         <NavAdmin v-else />
       </el-aside>
@@ -52,6 +53,9 @@
             <button type="button" class="btn-mobile" @click="toggleNavCollapse()">
               <i :class="`${navIsCollapsed ? 'el-icon-s-unfold' : 'el-icon-arrow-left'}`" />
             </button>
+            <span v-if="$route.params.psid" style="float: right">
+              <ElmDropdownStatus />
+            </span>
           </div>
 
           <div v-else>
@@ -60,6 +64,10 @@
               style="color: #e6a23c; float: left"
             >Super Admin &nbsp;</span>
             <ElmDropdownTopBarPage />
+
+            <span v-if="$route.params.psid" style="float: left">
+              <ElmDropdownStatus />
+            </span>
 
             {{ $auth.user.name }}
             <!-- <ElmDropdownLightDarkSwitcher /> -->
@@ -124,7 +132,8 @@ export default {
 
   mounted () {
     this.setDeviceType()
-    console.log(this.$auth.user.name)
+    this.getClientStatuses()
+    this.getUsers()
 
     this.$root.$on('restart-stream', (callStream) => {
       if (this.eventSource !== null) {
@@ -139,6 +148,8 @@ export default {
 
   methods: {
     ...mapActions({
+      getUsers: 'users/users',
+      getClientStatuses: 'statuses/get',
       updateNotification: 'notifications/updateNotification',
       setDeviceType: 'settings/setDeviceType',
       toggleNavCollapse: 'settings/toggleNavCollapse'

@@ -4,6 +4,14 @@
     element-loading-background="rgb(238, 238, 238)"
     style="margin-top: -10px"
   >
+    <div class="filter" style="height: 50px">
+      <div style="float: right; padding-right: 10px">
+        <ElmDropdownFilterStatus :statuses="filterBy.statuses" @status="(param) => {filterBy.statuses = param; filter(false)}" />
+      </div>
+      <div style="float: right; padding-right: 10px">
+        <ElmDropdownFilterResponder :responders="filterBy.responders" @responders="(param) => {filterBy.responders = param, filter(false)}" />
+      </div>
+    </div>
     <div v-if="magicLink" :key="key" class="wrap-conversations is-magiclink">
       <div
         :class="`wrap-fb-user ${conversation.unread_count > 0 ? 'unread' : ''} active ${theme}`"
@@ -21,34 +29,36 @@
       <div
         v-for="c in clone"
         :key="c.id"
-        :class="`wrap-fb-user ${c.unread_count > 0 ? 'unread' : ''} ${
-          c.id === activeId ? 'active' : ''
+        :class="`wrap-fb-user ${c.unread !== undefined && c.unread !== '' ? 'unread' : ''}
+        ${c.has_new_message !== undefined && c.has_new_message !== 0 ? 'unread' : ''}
+         ${
+          filtered ? c.mid === activeId ? 'active' : '' : c.id === activeId ? 'active' : ''
         } ${theme}`"
         @click="handleConversationClick(c)"
       >
-        <span class="name">
-          {{ c.senders.data[0].name }}
+        <span class="name" style="font-weight: bolder">
+          <i v-if="c.status && c.status === 1" class="el-icon-user-solid" style="color: #67C23A" />
+          <i v-if="c.status && c.status === 2" class="el-icon-user-solid" style="color: #E6A23C" />
+          <i v-if="c.status && c.status === 3" class="el-icon-user-solid" style="color: #F56C6C" />
+          <i v-if="!c.status" class="el-icon-user" />
+          {{ c.senders ? c.senders.data[0].name : c.name ? c.name : '' }}
         </span>
 
-        <div class="time">
-          {{ convertRelativeTime(c.updated_time) }}
+        <div class="time" style="text-align: right">
+          {{ c.updated_time ? convertRelativeTime(c.updated_time) : c.additional_information ? convertRelativeTime(JSON.parse(c.additional_information).updated_time) : '' }}
+          <p>
+            {{ c.responder ? c.responder.name : 'Please respond.' }}
+          </p>
         </div>
 
-        <span v-if="c.unread !== undefined && c.unread !== ''" class="count">
-          {{ c.unread }}
+        <span v-if="c.unread !== undefined && c.unread !== '' || c.has_new_message !== undefined && c.has_new_message !== 0" class="count">
+          {{ c.unread ? c.unread : c.has_new_message ? c.has_new_message === 0 ? '' : '!' : '' }}
         </span>
-        <!-- <span>
-          {{c.snippet}}
-        </span> -->
-
-        <!-- <span v-if="sender_id === c.senders.data[0].id && $route.params.psid !== c.senders.data[0].id" class="count">
-          {{ '!' }}
-        </span> -->
 
         <div style="clear: both" />
 
         <div class="snippet">
-          {{ c.snippet }}
+          {{ c.snippet ? c.snippet : c.additional_information ? JSON.parse(c.additional_information).snippet : '' }}
         </div>
       </div>
       <el-button
@@ -75,6 +85,16 @@
     </el-button>
 
     <el-button
+      v-if="filtered"
+      type="default"
+      size="small"
+      :class="`btn-back ${theme}`"
+      @click="handleCancelFilter"
+    >
+      Cancel Filter
+    </el-button>
+
+    <el-button
       v-else
       type="default"
       size="small"
@@ -95,6 +115,11 @@ export default {
       loaded: {
         messages: false
       },
+      filterBy: {
+        statuses: [],
+        responders: []
+      },
+      filtered: false,
       eventData: {},
       next: null,
       magicLink: false,
@@ -134,26 +159,41 @@ export default {
   },
 
   watch: {
-
     conversations (n, o) {
-      console.log(n)
       if (this.clone.length === 0) {
         this.clone = n
       } else {
-        n.map((nData) => {
-          this.clone.forEach((oData) => {
-            if (oData.unread !== undefined && nData.id === oData.id) {
-              nData.unread = oData.unread
-            }
-            if (nData.snippet !== oData.snippet && nData.id === oData.id && this.$route.params.psid !== nData.senders.data[0].id) {
-              nData.unread = '!'
-            }
+        if (this.filtered) {
+          this.clone.forEach((c, index) => {
+            n.forEach((nData) => {
+              if (c.mid && c.mid === nData.id) {
+                this.clone[index] = nData
+              }
+              if (c.id && c.id === nData.id) {
+                this.clone[index] = nData
+              }
+            })
           })
-          return n
-        })
-        this.clone = n
+        } else {
+          n.map((nData, index) => {
+            this.clone.forEach((oData) => {
+              if (oData.unread !== undefined && nData.id === oData.id) {
+                nData.unread = oData.unread
+              }
+              if (nData.snippet !== oData.snippet && nData.id === oData.id && this.$route.params.psid !== nData.senders.data[0].id) {
+                nData.unread = '!'
+              }
+            })
+
+            return n
+          })
+        }
+        if (!this.filtered) {
+          this.clone = n
+        }
         this.key++
       }
+      this.setClientData()
     },
 
     currentPage (n, q) {
@@ -175,17 +215,106 @@ export default {
     if ('psid' in this.$route.params) { this.reloadConversation() }
 
     this.$root.$on('new-message', (res) => { this.getNewMessage(res) })
+    this.$root.$on('set-status', (res) => { this.setStatus(res) })
+    this.$root.$on('set-responder', (res) => { this.setResponder(res) })
 
     this.configSound()
   },
 
   methods: {
-
     ...mapActions({
       setCurrentConversation: 'settings/setCurrentConversation',
       unsetCurrentConversation: 'settings/unsetCurrentConversation',
       toggleNavCollapse: 'settings/toggleNavCollapse'
     }),
+
+    handleCancelFilter () {
+      this.filterBy.statuses = []
+      this.filterBy.responders = []
+      this.filtered = false
+      this.getFbConversations(true)
+    },
+
+    async filter (loadMore = true) {
+      this.filtered = true
+      const payload = {
+        statuses: this.filterBy.statuses,
+        responders: this.filterBy.responders
+      }
+      const url = `client/${this.currentPage.page_id}/filter`
+      await this.$sender({
+        method: 'get',
+        url: this.next && loadMore ? this.next : url,
+        data: payload
+      }).then((res) => {
+        this.clone = this.next && loadMore ? [...this.clone, ...res.content.data.data] : res.content.data.data
+        this.next = res.content.data.next_page_url
+      })
+    },
+
+    setStatus (statusId) {
+      this.clone = this.clone.map((c) => {
+        if (c.id === this.$route.params.mid) {
+          c.status = statusId
+        }
+        return c
+      })
+      console.log('status', this.clone)
+    },
+
+    setResponder (responder) {
+      this.clone = this.clone.map((c) => {
+        if (c.id === this.$route.params.mid) {
+          c.responder = responder
+        }
+        return c
+      })
+      console.log('responder', this.clone)
+    },
+
+    async setClientData (newMessage = false, message = {}) {
+      if (newMessage) {
+        if (!message.message) {
+          return
+        }
+        console.log('set client', this.clone)
+        this.clone = this.clone.map((c) => {
+          if (c.id === this.$route.params.mid) {
+            c.snippet = message.message.text
+          }
+          return c
+        })
+        const inConversation = this.clone.find(c => c.id === this.$route.params.mid)
+
+        const info = { participants: inConversation.participants, snippet: inConversation.snippet, updated_time: inConversation.updated_time }
+        await this.$sender({
+          method: 'put',
+          url: `client/${inConversation.id}/update-additional-information`,
+          data: {
+            info
+          }
+        })
+        this.key++
+        return
+      }
+      this.clone.forEach(async (c) => {
+        const info = { participants: c.participants, snippet: c.snippet, updated_time: c.updated_time }
+
+        await this.$sender({
+          method: 'get',
+          url: `client/${c.id}/getData`,
+          data: {
+            name: c.senders.data[0].name,
+            info
+          }
+        }).then((res) => {
+          c.responder = res.content.data.responder
+          c.status = res.content.data.status
+          c.unread = res.content.data.has_new_message === 0 ? '' : '!'
+          this.key++
+        })
+      })
+    },
 
     async getConversation (payload) {
       const conversation = await this.$sender({
@@ -207,7 +336,6 @@ export default {
       // get psid
       if (this.eventData.entry !== undefined) {
         const senderId = this.eventData.entry[0].messaging[0].sender.id
-
         if (senderId === this.currentPage.page_id.toString()) {
           return
         }
@@ -247,11 +375,12 @@ export default {
       }
 
       this.eventData = message
-
       this.sender_id = message.entry[0].messaging[0].sender.id
-      if (this.$route.params.psid !== this.sender_id) {
+      const recipientId = message.entry[0].messaging[0].recipient.id
+      if (this.$route.params.psid !== this.sender_id && this.$route.params.psid !== recipientId) {
         this.getFbConversations(true)
-        this.unread_message++
+      } else {
+        this.setClientData(true, message.entry[0].messaging[0])
       }
     },
 
@@ -268,9 +397,11 @@ export default {
           contentType: 'application/json'
         }
       }).then((res) => {
-        console.log(res)
         this.conversations = res.content.data.conversations
-        this.next = res.content.data.next
+
+        if (!this.filtered) {
+          this.next = res.content.data.next
+        }
         this.setClient()
 
         this.audio.play()
@@ -285,6 +416,10 @@ export default {
     },
 
     async handleLoadMore () {
+      if (this.filtered) {
+        this.filter()
+        return
+      }
       this.loadMoreLoading = true
       await this.$sender({
         method: 'get',
@@ -322,24 +457,43 @@ export default {
       this.activeId = params.mid
     },
 
-    handleConversationClick (c) {
+    async readNewMessage (c) {
       c.unread = ''
+      await this.$sender({
+        method: 'put',
+        url: `client/${c.mid ? c.mid : c.id}/read-message`
+      })
+    },
+
+    handleConversationClick (c) {
+      this.readNewMessage(c)
       this.clone.map((cData) => {
         if (cData.id === c.id) {
           cData.unread = ''
+          cData.has_new_message = 0
         }
         return this.clone
       })
       this.key++
-      this.activeId = c.id
-      const p = c.participants.data
+      let p = []
+      if (c.mid) {
+        this.activeId = c.mid
+        const info = JSON.parse(c.additional_information)
+        p = info.participants.data
+        this.setCurrentConversation(info.participants.data[0].name)
+      } else {
+        this.activeId = c.id
+        p = c.participants.data
+        this.setCurrentConversation(c.participants.data[0].name)
+      }
       const x = p.filter(p => p.id !== this.currentPage.page_id + '')
-      this.setCurrentConversation(c.participants.data[0].name)
       if (this.$route.params.psid === x[0].id) {
         const h = this.$createElement
         this.$notify({
           message: h('i', { style: 'color: teal' }, 'You click the same conversation.')
         })
+      } else if (c.mid) {
+        this.$router.replace('/pages/' + this.currentPage.id + '/' + c.mid + '/' + x[0].id)
       } else {
         this.$router.replace('/pages/' + this.currentPage.id + '/' + c.id + '/' + x[0].id)
       }
@@ -367,7 +521,6 @@ export default {
         return `${Math.floor(elapsed / (86400))}d`
       }
     }
-
   }
 }
 </script>
@@ -375,7 +528,7 @@ export default {
 <style lang="scss" scoped>
 .wrap {
   &-conversations {
-    height: calc(100vh - 100px);
+    height: calc(100vh - 150px);
   }
 
   &-fb-user {
@@ -429,7 +582,7 @@ export default {
 
     .name {
       float: left;
-      width: 100px;
+      width: 150px;
       height: 26px;
       line-height: 26px;
       margin-top: 10px;
