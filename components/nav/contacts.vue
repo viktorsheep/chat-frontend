@@ -239,7 +239,7 @@ export default {
       this.filterBy.statuses = []
       this.filterBy.responders = []
       this.filtered = false
-      this.getFbConversations(true)
+      this.getFbConversations()
       this.loadingOnFilter = false
     },
 
