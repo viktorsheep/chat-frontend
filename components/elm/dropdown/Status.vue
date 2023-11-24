@@ -2,7 +2,9 @@
   <div>
     <el-dropdown :key="key" @command="handleClick">
       <el-button type="primary">
-        {{ client.client_status ? client.client_status.name : 'Status unset' }}
+        <span class="select">
+          {{ client.client_status ? client.client_status.name : 'Status unset' }}
+        </span>
         <i class="el-icon-arrow-down el-icon--right" />
       </el-button>
 
@@ -11,6 +13,7 @@
           v-for="status in client_status"
           :key="status.id"
           :command="status.id"
+          class="select"
         >
           {{ status.name }}
         </el-dropdown-item>
@@ -69,3 +72,9 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.select{
+  text-transform: capitalize;
+}
+</style>

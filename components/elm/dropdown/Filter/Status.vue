@@ -14,6 +14,7 @@
         :key="status.id"
         :label="status.name"
         :value="status.id"
+        class="option"
       />
     </el-select>
   </div>
@@ -55,5 +56,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+.option{
+  text-transform: capitalize;
+}
 </style>

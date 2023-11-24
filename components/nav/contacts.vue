@@ -4,11 +4,11 @@
     element-loading-background="rgb(238, 238, 238)"
     style="margin-top: -10px"
   >
-    <div class="filter" style="height: 50px">
-      <div style="float: right; padding-right: 10px">
+    <div class="filter" style="height: 50px; padding-top: 12px">
+      <div style="float: right; padding-right: 15px">
         <ElmDropdownFilterStatus :statuses="filterBy.statuses" @status="(param) => {filterBy.statuses = param; filter(false)}" />
       </div>
-      <div style="float: right; padding-right: 10px">
+      <div style="float: right; padding-right: 15px">
         <ElmDropdownFilterResponder :responders="filterBy.responders" @responders="(param) => {filterBy.responders = param, filter(false)}" />
       </div>
     </div>
@@ -25,7 +25,12 @@
         </div>
       </div>
     </div>
-    <div v-else :key="key" class="wrap-conversations not-magiclink">
+    <div
+      v-else
+      :key="key"
+      v-loading="loadingOnFilter"
+      class="wrap-conversations not-magiclink"
+    >
       <div
         v-for="c in clone"
         :key="c.id"
@@ -115,6 +120,7 @@ export default {
       loaded: {
         messages: false
       },
+      loadingOnFilter: false,
       filterBy: {
         statuses: [],
         responders: []
@@ -229,13 +235,21 @@ export default {
     }),
 
     handleCancelFilter () {
+      this.loadingOnFilter = true
       this.filterBy.statuses = []
       this.filterBy.responders = []
       this.filtered = false
       this.getFbConversations(true)
+      this.loadingOnFilter = false
     },
 
     async filter (loadMore = true) {
+      this.loadingOnFilter = true
+      if (this.filterBy.statuses.length === 0 && this.filterBy.responders.length === 0) {
+        this.handleCancelFilter()
+        this.loadingOnFilter = false
+        return
+      }
       this.filtered = true
       const payload = {
         statuses: this.filterBy.statuses,
@@ -249,6 +263,7 @@ export default {
       }).then((res) => {
         this.clone = this.next && loadMore ? [...this.clone, ...res.content.data.data] : res.content.data.data
         this.next = res.content.data.next_page_url
+        this.loadingOnFilter = false
       })
     },
 
@@ -528,7 +543,7 @@ export default {
 <style lang="scss" scoped>
 .wrap {
   &-conversations {
-    height: calc(100vh - 150px);
+    height: calc(100vh - 162px);
   }
 
   &-fb-user {
