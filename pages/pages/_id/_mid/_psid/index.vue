@@ -31,7 +31,7 @@
     </el-empty>
 
     <div v-else class="wrap-chat">
-      <div v-if="loadMore === true" style="text-align: center;">
+      <div v-if="loadMore === true" class="scroll-loading">
         Loading...
       </div>
       <!-- Message list -->
@@ -922,6 +922,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.scroll-loading {
+  width: calc(100% - 324px);
+  text-align: center;
+  background-color: #1f91f2;
+  color: white;
+  padding: 5px;
+  position: fixed;
+  z-index: 2;
+}
+
 .wrap {
   &-chat {
     height: calc(100vh - 60px);
@@ -1191,5 +1201,6 @@ export default {
       }
     }
   }
+
 }
 </style>
