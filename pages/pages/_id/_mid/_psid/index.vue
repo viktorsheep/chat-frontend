@@ -31,7 +31,7 @@
     </el-empty>
 
     <div v-else class="wrap-chat">
-      <div v-if="loadMore === true" style="text-align: center;">
+      <div v-if="loadMore === true" style="text-align: center; width: 100%; background-color: #1f91f2; color: white; padding: 5px">
         Loading...
       </div>
       <!-- Message list -->
