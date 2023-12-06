@@ -482,7 +482,7 @@ export default {
             this.visibility.controls = true
           }).catch((error) => {
             this.$notify.error({
-              title: 'Sorry, something went wrong.',
+              title: 'Facebook Get Message Error',
               message: 'There was an error while getting the messages. Please try again later.'
             })
 
@@ -606,7 +606,7 @@ export default {
           this.getFBMessage(true)
         }).catch((error) => {
           this.$notify.error({
-            title: 'Sorry, something went wrong.',
+            title: 'Facebook Send Message Error',
             message: 'There was an error while sending the message. Please try again later.'
           })
 
@@ -727,7 +727,7 @@ export default {
         this.$root.$emit('restart-stream', callStream)
       }).catch((error) => {
         this.$notify.error({
-          title: 'Sorry, something went wrong.',
+          title: 'Facebook Get Message Error',
           message: 'There was an error while getting the messages. Please try again later.'
         })
 
