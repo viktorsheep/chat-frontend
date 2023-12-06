@@ -64,10 +64,13 @@ export default ({ app }, inject) => {
 
       success = true
     }).catch((err) => {
+      console.log(err.response)
       Notification({
         type: 'error',
         dangerouslyUseHTMLString: true,
-        message: 'Sorry, Something went wrong. <br /> Error : ' + err.response.status
+        message: typeof err.response.data === 'string'
+          ? `<b>${err.response.data} <br /> Error code: ${err.response.status}</b>`
+          : `Sorry, Something went wrong. <br /> Error: ${err.response.status}`
       })
     }).then(() => {
       if (payload.baseURL !== undefined) {
